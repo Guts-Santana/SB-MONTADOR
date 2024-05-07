@@ -55,12 +55,15 @@ void LEITURA(std::string filename){
 			//std::cout << word << std::endl;
 		}
 		if (linha.size()>=2){
-			DEFINE_EQUS(linha);
 			if (EIF(linha)){
 				if (IFS(linha))
 					std::getline(file,line);
 				linha.clear();
 			}
+		}
+		if (linha.size()>=3){
+			if(DEFINE_EQUS(linha))
+				linha.clear();
 		}
 
 		if (arquivo.is_open()){
@@ -93,12 +96,14 @@ bool IFS(std::vector<std::string> linha){
 	return false;
 }
 
-void DEFINE_EQUS(std::vector<std::string> linha){
+bool DEFINE_EQUS(std::vector<std::string> linha){
 	if (linha[1] == "EQU"){
 		linha[0].pop_back();
 		LABEL_EQU.push_back(linha[0]);
 		VALOR_EQU.push_back(linha[2]);
+		return true;
 	}
+	return false;
 }
 
 std::string ALTERA_EQUS(std::string word){

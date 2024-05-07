@@ -8,7 +8,7 @@ bool EIF(std::vector<std::string> linha);
 
 bool IFS(std::vector<std::string> linha);
 
-void DEFINE_EQUS(std::vector<std::string> linha);
+bool DEFINE_EQUS(std::vector<std::string> linha);
 
 std::string ALTERA_EQUS(std::string word);
 
