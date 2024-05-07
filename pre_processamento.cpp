@@ -1,11 +1,3 @@
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <vector>
-#include <cctype>
-#include <algorithm>
-
 #include "pre_processamento.hpp"
 
 std::vector<std::string> VALOR_EQU;
@@ -54,17 +46,13 @@ void LEITURA(std::string filename){
 			linha.push_back(word);
 			//std::cout << word << std::endl;
 		}
-		if (linha.size()>=2){
-			if (EIF(linha)){
-				if (IFS(linha))
-					std::getline(file,line);
-				linha.clear();
-			}
+		if (EIF(linha)){
+			if (IFS(linha))
+				std::getline(file,line);
+			linha.clear();
 		}
-		if (linha.size()>=3){
-			if(DEFINE_EQUS(linha))
-				linha.clear();
-		}
+		if(DEFINE_EQUS(linha))
+			linha.clear();
 
 		if (arquivo.is_open()){
 			for (int i = 0; i < (int)linha.size(); i++){
@@ -81,27 +69,39 @@ void LEITURA(std::string filename){
 	arquivo.close();
 }	
 bool EIF(std::vector<std::string> linha){
-	if (linha[0] == "IF"){
-		return true;
+	if (linha.size() == 2){
+		if (linha[0] == "IF")
+			return true;
+		}
+	if (linha.size() >= 2){
+		if (linha[0] == "IF" || linha[1] == "IF")
+			return true;
 	}
 	return false;
-	
 }
+
+
 bool IFS(std::vector<std::string> linha){	
 	//RETORNA UMA FLAG CASO IF 0;
-	if (linha[0] == "IF"){
+	if (linha.size() == 2){
 		if (linha[1] == "0")
+			return true;
+	}
+	if (linha.size() > 2){
+		if (linha[1] == "0" || linha[2] == "0")
 			return true;
 	}
 	return false;
 }
 
 bool DEFINE_EQUS(std::vector<std::string> linha){
-	if (linha[1] == "EQU"){
-		linha[0].pop_back();
-		LABEL_EQU.push_back(linha[0]);
-		VALOR_EQU.push_back(linha[2]);
-		return true;
+	if (linha.size()>=3){
+		if (linha[1] == "EQU"){
+			linha[0].pop_back();
+			LABEL_EQU.push_back(linha[0]);
+			VALOR_EQU.push_back(linha[2]);
+			return true;
+		}
 	}
 	return false;
 }
@@ -121,8 +121,8 @@ std::string CASO(std::string word){
 	return word;
 }
 
-int COMENTARIO(std::string word){
+bool COMENTARIO(std::string word){
 	if (word[0]==';')
-		return 1;
-	return 0;
+		return true;
+	return false;
 }
