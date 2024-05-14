@@ -1,8 +1,8 @@
 #include "montador.hpp"
 
-int contador_linha = 1;
-std::vector<std::string> LABELS;
-std::vector<std::string> PROGRAMA;
+int contador_linha = 1;	//contagem para erro
+std::vector<std::string> LABELS;	
+std::vector<std::string> PROGRAMA;	//Vetor que vai escrever a lista no arquivo saida
 
 int main(int argc, char *argv[]){
 	if (argc != 3){
