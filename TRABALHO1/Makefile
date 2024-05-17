@@ -7,4 +7,4 @@ PROC: montador.cpp montador.hpp
 	./montador -o $(ARQUIVO)
 
 clean:
-	rm -rf montador *.o *.exe *.gc* *.pre
+	rm -rf montador *.o *.exe *.gc* *.pre *.obj

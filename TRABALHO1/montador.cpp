@@ -6,8 +6,14 @@ int main(int argc, char *argv[]){
 		return 1;
 	}
 	std::string filename = argv[2];
-	LEITURA(filename);
-	//ESCRITA(filename);
+	try{
+		LEITURA(filename);
+	}
+	catch (const std::invalid_argument& e){
+		std::cerr << e.what() << '\n';
+		std::cerr << "Na linha: " << contador_linha << '\n';
+	}
+	ESCRITA(filename);
 
 	return 0;
 }
@@ -30,18 +36,19 @@ void LEITURA(std::string filename){
 			//std::cout << word << std::endl;
 		}
 		linha = PROCURA_LABEL(linha);
+		if (linha[0] == "COPY") {
+			linha = INS_COPY(linha);
+		}
 		ESCREVE_PROGRAMA(linha);
-		//ESCREVE_SIMBOLOS(linha);
-		if (linha.size() != 1 || (linha.size() == 1 && linha[0].back() != ':'))
-			PC+=linha.size();
+		if (linha.size() != 1|| (linha.size() == 1 && linha[0].back() != ':'))
+			if (linha.size() != 1 && linha[0].back() != ':')
+				PC+=linha.size();
+			else
+				PC++;
 		//std::cout << PC << '\n';
 
 		contador_linha++;
 	}
-	for (int i = 0; i < PROGRAMA.size(); i++)
-	{
-		std::cout << PROGRAMA[i] << ' ';
-		}
 }
 
 void ESCRITA(std::string filename){
@@ -52,8 +59,8 @@ void ESCRITA(std::string filename){
 	std::ofstream arquivo(filename);
 	if (arquivo.is_open()){
 		for (std::string i : PROGRAMA){
-			std::cout << i << " ";
-			arquivo << i << " ";
+			std::cout << i << ' ';
+			arquivo << i << ' ';
 		}
 	}
 	arquivo.close();
@@ -114,21 +121,20 @@ void ESCREVE_PROGRAMA(std::vector<std::string> linha){
 
 void ESCREVE_SIMBOLOS(std::vector<std::string> linha){
 	linha[0].pop_back();
-	//if (linha.size() != 2 && linha.size() != 3)
-	//	throw std::invalid_argument("Erro sintatico");
-	int pos = PC + 1;
+	if (linha.size() != 2 && linha.size() != 3)
+		throw std::invalid_argument("Erro sintatico");
+	int pos;
 	int temp;
 	auto it4 = std::find(SIMBOLOS.begin(), SIMBOLOS.end(), linha[0]);
 	if (it4 != SIMBOLOS.end()){
 		int posicao = std::distance(SIMBOLOS.begin(), it4);
 		if (linha[1] == "CONST"){
-			std::cout << "aqui2";
 			//if (linha.size() != 3)
 			//	throw std::invalid_argument("Erro sintatico");
 			PROGRAMA.push_back(linha[2]);
+			
 		}
 		else if (linha[1] == "SPACE"){
-			std::cout << "aqui";
 			//if (linha.size() != 2)
 			//	throw std::invalid_argument("Erro sintatico");
 			PROGRAMA.push_back("0");
@@ -136,25 +142,23 @@ void ESCREVE_SIMBOLOS(std::vector<std::string> linha){
 		else{
 			throw std::invalid_argument("Erro");
 		}
-		
+		pos = std::stoi(SIMBOLOS_ENDERECO[posicao]);
 		while (PROGRAMA[pos] != "-1"){
-				temp = std::stoi(PROGRAMA[pos]);
-			std::cout<< temp << std::endl;
-			PROGRAMA[pos] = SIMBOLOS_ENDERECO[posicao];
-			pos = temp;
+			temp = std::stoi(PROGRAMA[pos]);
+			PROGRAMA[pos] = std::to_string(PC);
+			pos = (int)temp;
 		}
-		PROGRAMA[pos] = SIMBOLOS_ENDERECO[posicao];
+		PROGRAMA[pos] = std::to_string(PC);
 	}
 	//TLVZ ME PREOCUPAR COM DEFINICAO DE SIMBOLO NO COMECO
 }
-	
 
-
-
-// void CASO_BASE(std::vector<std::string> linha){
-// 	//if (linha[0] != "COPY"){
-// 		if (linha.size() != 2){
-// 			throw std::invalid_argument("Erro de sintaxe na linha:");
-// 		}
-// 	//}
-// }
+std::vector<std::string> INS_COPY(std::vector<std::string> linha){
+	std::stringstream ss(linha[1]);
+	std::string a, b;
+	std::getline(ss, a, ',');
+    std::getline(ss, b, ',');
+	linha[1] = a;
+	linha.push_back(b);
+	return linha;
+}
