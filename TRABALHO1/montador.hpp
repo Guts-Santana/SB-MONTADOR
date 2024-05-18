@@ -18,7 +18,7 @@ std::vector<std::string> OPCODES {"ADD", "SUB", "MUL", "DIV","JMP",
 "JMPN", "JMPP", "JMPZ", "COPY", "LOAD", "STORE", "INPUT", "OUTPUT", "STOP"};
 std::vector<std::string> VALOR_OPCODES {"1", "2", "3", "4", "5", "6", "7",
 "8", "9", "10", "11", "12", "13", "14"};
-
+std::vector<std::string> LABEL_NODEF;
 
 void LEITURA(std::string filename);
 
