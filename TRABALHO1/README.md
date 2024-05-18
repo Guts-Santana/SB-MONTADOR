@@ -49,4 +49,4 @@ atráves do comando:
 
 ## Contato
 
-Se você quiser entrar em contato, envie um e-mail para [Endereço de E-mail](guts.santana@gmail.com).
+Se você quiser entrar em contato, envie um e-mail para [guts.santana@gmail.com](mailto:guts.santana@gmail.com).
