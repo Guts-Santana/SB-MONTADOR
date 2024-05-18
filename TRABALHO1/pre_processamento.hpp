@@ -1,6 +1,13 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <sstream>
+#include <fstream>
+#include <cctype>
+#include <algorithm>
+
+std::vector<std::string> VALOR_EQU;
+std::vector<std::string> LABEL_EQU;
 
 void LEITURA(std::string filename);
 
@@ -14,4 +21,4 @@ std::string ALTERA_EQUS(std::string word);
 
 std::string CASO(std::string word);
 
-int COMENTARIO(std::string word);
+bool COMENTARIO(std::string word);
