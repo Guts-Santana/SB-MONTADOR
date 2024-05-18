@@ -217,6 +217,7 @@ void Montador::handleInstruction(const std::string &instruction, const std::stri
 
 void Montador::updateUsageTable(const std::string &symbol, int address)
 {
+    std::cout << "Usage: " << symbol << " " << address << std::endl;
     usageTable.emplace_back(symbol, address);
 }
 

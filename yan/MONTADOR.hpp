@@ -26,8 +26,6 @@ private:
     void parseLine(const std::string &line);
     void handleDirective(const std::string &directive, const std::string &operand);
     void handleInstruction(const std::string &instruction, const std::string &operand);
-    void handleCopy(const std::string &instruction, const std::string &operand, std::string &operand2);
-
     void updateUsageTable(const std::string &symbol, int address);
     void backpatch();
     void writeObjectFile(const std::string &outputFile);
