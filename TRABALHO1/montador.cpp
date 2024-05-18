@@ -51,6 +51,12 @@ void LEITURA(std::string filename){
 	}
 }
 
+/**
+ * @brief Essa função é a responsável por escrever o arquivo.obj atraves 
+ * de um vetor PROGRAMA que já tem os endereços dos opcodes e simbolos
+ * 
+ * @param filename essa função recebe o nome do arquivo como endereço
+ */
 void ESCRITA(std::string filename){
 	filename.pop_back();
 	filename.pop_back();
@@ -66,16 +72,23 @@ void ESCRITA(std::string filename){
 	arquivo.close();
 }
 
-
+/**
+*@brief essa função procura definição de label e caso encontre,
+*salva o endereço da label e retorna a linha sem a label.
+*Caso ela encontre a definição de uma label já usada,
+*Essa função irá escrever o endereço correto no programa
+*@param parameter-linha Recebe a linha lida do arquivo pre
+*@return retorna a linha lida, sem a definição da label
+*/
 std::vector<std::string> PROCURA_LABEL(std::vector<std::string> linha){
 	if (linha[0].back() == ':'){
 		std::string temp = linha[0];
 		temp.pop_back();
 		auto it = std::find(LABELS.begin(), LABELS.end(), temp);
-		if (it != LABELS.end()){
+		if (it != LABELS.end()){ //PROCURA SE A LABEL JÁ FOI USADA
 			std::cout << "teste" << std::flush;
 			auto it3 = std::find(LABEL_NODEF.begin(), LABEL_NODEF.end(), temp);
-			if (it3 != LABEL_NODEF.end()){
+			if (it3 != LABEL_NODEF.end()){ // CONFERE SE JA FOI DEFINIDA OU SÓ USADA
 				std::cout << "teste" << std::flush;
 				int posicao = std::distance(LABELS.begin(), it);
 				PROGRAMA[std::stoi(LABEL_ENDERECO[posicao])] = std::to_string(PC);
@@ -86,14 +99,14 @@ std::vector<std::string> PROCURA_LABEL(std::vector<std::string> linha){
 				linha.erase(linha.begin());
 				return linha;
 			}
-			else{
+			else{//CASO JA TENHA SIDO DEFINIDA ANTES, ERRO SEMANTICO
 				it3 = std::find(LABEL_NODEF.begin(), LABEL_NODEF.end(), linha[0]);
 				if (it3 == LABEL_NODEF.end())
 					throw std::invalid_argument("Erro Semantico, LABEL REDEFINIDA");
 			}
 
 		}
-		else if (linha[1] != "SPACE" && linha[1] != "CONST"){
+		else if (linha[1] != "SPACE" && linha[1] != "CONST"){ //SALVA A LABEL E O ENDERECO DELA
 			linha[0].pop_back();
 			LABELS.push_back(linha[0]);
 			LABEL_ENDERECO.push_back(std::to_string(PC));
@@ -103,6 +116,12 @@ std::vector<std::string> PROCURA_LABEL(std::vector<std::string> linha){
 	return linha;
 }
 
+/**
+ * @brief essa funcao recebe a linha lida e conforme vai lendo os indices da linha,
+ *  essa função vai escrevendo os valores de endereço e opcodes em um vetor
+ * que será utilizado para escrever o arquivo.obj
+ * @param linha a linha lida do arquivo.pre, sem definição de label.
+ */
 void ESCREVE_PROGRAMA(std::vector<std::string> linha){
 	int posicao;
 	for (int i = 0; i < linha.size(); i++){
@@ -150,6 +169,12 @@ void ESCREVE_PROGRAMA(std::vector<std::string> linha){
 	}
 }
 
+/**
+ * @brief Essa função é a responsável por ler os simbolos e seus enderecos e
+ * alterar os endereços temporarios escritos pelo programa com o algoritmo de 
+ * passagem única e escrever os endereços reais dos simbolos durante o programa.
+ * @param linha a linha lida do arquivo.pre, sem definição de label.
+ */
 void ESCREVE_SIMBOLOS(std::vector<std::string> linha){
 	linha[0].pop_back();
 	if (linha.size() != 2 && linha.size() != 3)
@@ -184,6 +209,12 @@ void ESCREVE_SIMBOLOS(std::vector<std::string> linha){
 	//TLVZ ME PREOCUPAR COM DEFINICAO DE SIMBOLO NO COMECO
 }
 
+/**
+ * @brief Essa função é a responsável por separar os simbolos
+ * usados pela instrução copy, que estão separados por uma vírgula.
+ * @param linha a linha lida do arquivo.pre, sem definição de label.
+ * @return retorna a linha, pós separar os símbolos.
+ */
 std::vector<std::string> INS_COPY(std::vector<std::string> linha){
 	std::stringstream ss(linha[1]);
 	std::string a, b;

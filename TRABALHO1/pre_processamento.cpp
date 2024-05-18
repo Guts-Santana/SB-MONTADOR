@@ -71,11 +71,13 @@ void LEITURA(std::string filename){
 	arquivo.close();
 }
 
-/*
-Confere se a linha é uma declaração de if
-Se for, returna true, e entra na função IFS
-Para definir se o IF é 1 ou nao
-*/
+/**
+ * @brief Confere se a linha é uma declaração de if
+ * Se for, returna true, e entra na função IFS
+ * @param linha a linha lida do arquivo.asm
+ * @return true caso seja um IF
+ * @return false caso nao seja IF
+ */
 bool EIF(std::vector<std::string> linha){
 	if (linha.size() == 2){
 		if (linha[0] == "IF")
@@ -88,11 +90,13 @@ bool EIF(std::vector<std::string> linha){
 	return false;
 }
 
-/*
-CASO SEJA UM IF, ANALISA SE O VALOR DO IF É 1 OU 0
-SE FOR 1 retorna false para n apagar a proxima linha
-SE FOR 0, retorna true para apagar a proxima linha
-*/
+/**
+ * @brief analisa se a linha lida é um if ou nao,
+ * caso a linha lida SEJA UM IF, ANALISA SE O VALOR DO IF É 1 OU 0
+ * @param linha a linha lida do arquivo.asm
+ * @return true caso o if seja 0 e tenha que apagar a proxima linha
+ * @return false caso o if seja verdadeiro e a proxima linha deve ser lida
+ */
 bool IFS(std::vector<std::string> linha){	
 	//RETORNA UMA FLAG CASO IF 0;
 	if (linha.size() == 2){
@@ -106,12 +110,14 @@ bool IFS(std::vector<std::string> linha){
 	return false;
 }
 
-/*
-A funcao confere se a linha descrita é uma definição de EQU
-Se for, adiciona a label e o valor dela em vetores correspondentes
-retorna TRUE para apagar a linha
-Se n for definicao retorna FALSE
-*/
+/**
+ * @brief A funcao confere se a linha descrita é uma definição de EQU
+ * Se for, adiciona a label e o valor dela em vetores correspondentes
+ * @param linha a linha lida do arquivo.asm
+ * @return true caso seja definicao de EQU e deva apagar a proxima linha
+ * @return false caso nao seja definicao de EQU[
+ * 
+ */
 bool DEFINE_EQUS(std::vector<std::string> linha){
 	if (linha.size()>=3){
 		if (linha[1] == "EQU"){
@@ -124,10 +130,12 @@ bool DEFINE_EQUS(std::vector<std::string> linha){
 	return false;
 }
 
-/*
-Fica procurando se a word achada é uma definição de EQU
-Se for, a word é substituida por uma string com o valor numerico do EQU
-*/
+/**
+ * @brief confere se a linha lida é usada o EQU definido,
+ * caso seja, essa função é responsavel por alterar a EQU
+ * @param linha a linha lida do arquivo.asm
+ * @return retorna a linha com a alteração do EQU
+ */
 std::string ALTERA_EQUS(std::string word){
 	auto it = std::find(LABEL_EQU.begin(), LABEL_EQU.end(), word);
 	if (it != LABEL_EQU.end()){
@@ -137,9 +145,14 @@ std::string ALTERA_EQUS(std::string word){
 	return word;
 }
 
-/*
-Funcao que passa para maiuscula
-*/
+/**
+ * @brief Essa função altera as palavras lidas para maiusculas
+ * Para que assim o código nao seja sensivel ao caso de letras 
+ * maiuscula ou minusculas
+ * 
+ * @param word recebe palavra a palavra lida pelo arquivo.asm
+ * @return retorna a word no formato maiusculo
+ */
 std::string CASO(std::string word){
 	std::transform(word.begin(), word.end(), word.begin(),
         [](unsigned char c){ return std::toupper(c); });
