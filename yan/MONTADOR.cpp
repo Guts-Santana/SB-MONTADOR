@@ -1,11 +1,8 @@
 #include "MONTADOR.hpp"
 #include <sstream>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <map>
-#include <vector>
 #include <iomanip>
+#include <algorithm> // Para std::transform
+#include <cctype>    // Para std::toupper
 
 Montador::Montador() : currentAddress(0), isBeginEnd(false)
 {
@@ -31,6 +28,7 @@ void Montador::assemble(const std::string &inputFile, const std::string &outputF
     }
 
     infile.close();
+    backpatch();
     writeObjectFile(outputFile);
 }
 
@@ -44,42 +42,74 @@ void Montador::parseLine(const std::string &line)
 
     auto tokens = split(trimmedLine, ' ');
 
-    if (tokens.size() > 1)
+    // Check if the line contains a label
+    if (tokens[0].back() == ':')
     {
-        std::string directiveOrInstruction = tokens[0];
-        std::string operand = tokens[1];
-
-        if (directiveOrInstruction == "BEGIN" || directiveOrInstruction == "END" ||
-            directiveOrInstruction == "EXTERN" || directiveOrInstruction == "PUBLIC")
+        std::string label = tokens[0].substr(0, tokens[0].length() - 1);
+        if (symbolTable.find(label) != symbolTable.end() && symbolTable[label].defined)
         {
-            handleDirective(directiveOrInstruction, operand);
+            std::cerr << "Error: Symbol redefined: " << label << std::endl;
+            return;
+        }
+        symbolTable[label] = {currentAddress, false, false, true};
+        tokens.erase(tokens.begin());
+    }
+
+    if (!tokens.empty())
+    {
+        if (tokens.size() > 1)
+        {
+            std::string directiveOrInstruction = tokens[0];
+            std::string operand = tokens[1];
+
+            if (isDirective(directiveOrInstruction))
+            {
+                handleDirective(directiveOrInstruction, operand);
+            }
+            else
+            {
+                handleInstruction(directiveOrInstruction, operand);
+            }
         }
         else
         {
-            handleInstruction(directiveOrInstruction, operand);
+            if (isDirective(tokens[0]))
+            {
+                handleDirective(tokens[0], "");
+            }
+            else
+            {
+                handleInstruction(tokens[0], "");
+            }
         }
     }
-    else
-    {
-        handleInstruction(tokens[0], "");
-    }
+}
+
+bool Montador::isDirective(const std::string &token)
+{
+    std::string upperToken = token;
+    std::transform(upperToken.begin(), upperToken.end(), upperToken.begin(), ::toupper);
+    return upperToken == "BEGIN" || upperToken == "END" || upperToken == "EXTERN" || upperToken == "PUBLIC";
 }
 
 void Montador::handleDirective(const std::string &directive, const std::string &operand)
 {
-    if (directive == "BEGIN")
+    std::string upperDirective = directive;
+    std::transform(upperDirective.begin(), upperDirective.end(), upperDirective.begin(), ::toupper);
+
+    if (upperDirective == "BEGIN")
     {
         isBeginEnd = true;
     }
-    else if (directive == "END")
+    else if (upperDirective == "END")
     {
         // No special action needed
     }
-    else if (directive == "EXTERN")
+    else if (upperDirective == "EXTERN")
     {
-        symbolTable[operand] = {0, true, false};
+        symbolTable[operand] = {0, true, false, false};
     }
-    else if (directive == "PUBLIC")
+    else if (upperDirective == "PUBLIC")
     {
         if (symbolTable.find(operand) != symbolTable.end())
         {
@@ -87,58 +117,92 @@ void Montador::handleDirective(const std::string &directive, const std::string &
         }
         else
         {
-            symbolTable[operand] = {currentAddress, false, true};
+            symbolTable[operand] = {currentAddress, false, true, false};
         }
     }
 }
 
 void Montador::handleInstruction(const std::string &instruction, const std::string &operand)
 {
-    if (instructionSet.find(instruction) == instructionSet.end())
+    std::string upperInstruction = instruction;
+    std::transform(upperInstruction.begin(), upperInstruction.end(), upperInstruction.begin(), ::toupper);
+
+    if (instructionSet.find(upperInstruction) == instructionSet.end())
     {
         std::cerr << "Error: Unknown instruction " << instruction << std::endl;
         return;
     }
 
-    int opcode = instructionSet[instruction];
+    int opcode = instructionSet[upperInstruction];
+    std::stringstream ss;
+
     if (opcode != -1)
-    {
-        std::stringstream ss;
+    { // Handle normal instructions
         ss << std::hex << std::setw(2) << std::setfill('0') << opcode;
-        if (!operand.empty() && symbolTable.find(operand) != symbolTable.end())
+
+        if (!operand.empty())
         {
+            if (symbolTable.find(operand) == symbolTable.end())
+            {
+                symbolTable[operand] = {0, false, false, false};
+                symbolTable[operand].references.push_back(currentAddress + 1); // Operand address
+            }
+            else if (!symbolTable[operand].defined)
+            {
+                symbolTable[operand].references.push_back(currentAddress + 1); // Operand address
+            }
+
             ss << " " << std::setw(2) << std::setfill('0') << symbolTable[operand].address;
+
             if (symbolTable[operand].isExtern)
             {
-                updateUsageTable(operand, currentAddress);
+                updateUsageTable(operand, currentAddress + 1);
             }
+            relocationTable.push_back(0); // Opcode
+            relocationTable.push_back(1); // Operand
         }
         else
         {
             ss << " 00";
+            relocationTable.push_back(0); // Opcode
+            relocationTable.push_back(0); // No operand
         }
-        objectCode.push_back(ss.str());
     }
-    else if (instruction == "CONST")
-    {
-        objectCode.push_back(operand);
-    }
-    else if (instruction == "SPACE")
-    {
-        objectCode.push_back("00");
-    }
-
-    if (!operand.empty() && symbolTable.find(operand) == symbolTable.end())
-    {
-        symbolTable[operand] = {currentAddress, false, false};
+    else
+    { // Handle CONST and SPACE
+        if (upperInstruction == "CONST")
+        {
+            ss << operand;
+        }
+        else if (upperInstruction == "SPACE")
+        {
+            ss << "00";
+        }
+        relocationTable.push_back(1); // Operand is relocatable
     }
 
-    currentAddress++;
+    objectCode.push_back(ss.str());
+    currentAddress += 2; // Each instruction has 2 bytes
 }
 
 void Montador::updateUsageTable(const std::string &symbol, int address)
 {
     usageTable.emplace_back(symbol, address);
+}
+
+void Montador::backpatch()
+{
+    for (auto &entry : symbolTable)
+    {
+        for (int addr : entry.second.references)
+        {
+            std::stringstream ss;
+            ss << std::hex << std::setw(2) << std::setfill('0') << entry.second.address;
+            int instructionIndex = addr / 2;
+            std::string updatedInstruction = objectCode[instructionIndex].substr(0, 3) + ss.str();
+            objectCode[instructionIndex] = updatedInstruction;
+        }
+    }
 }
 
 void Montador::writeObjectFile(const std::string &outputFile)
@@ -169,6 +233,11 @@ void Montador::writeObjectFile(const std::string &outputFile)
         }
 
         outfile << "REAL\n";
+        for (const auto &entry : relocationTable)
+        {
+            outfile << entry;
+        }
+        outfile << "\n";
     }
 
     for (const auto &code : objectCode)
