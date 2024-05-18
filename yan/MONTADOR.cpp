@@ -8,7 +8,7 @@ Montador::Montador() : currentAddress(0), isBeginEnd(false)
 {
     // Mapa de instruções para opcode (simulação)
     instructionSet = {
-        {"INPUT", 12}, {"LOAD", 10}, {"DIV", 4}, {"STORE", 11}, {"MUL", 3}, {"SUB", 2}, {"OUTPUT", 13}, {"COPY", 9}, {"JMPP", 7}, {"JMP", 5}, {"CONST", -1}, {"SPACE", -1}};
+        {"ADD", 1}, {"SUB", 2}, {"MUL", 3}, {"DIV", 4}, {"JMP", 5}, {"JMPN", 6}, {"JMPP", 7}, {"JMPZ", 8}, {"COPY", 9}, {"LOAD", 10}, {"STORE", 11}, {"INPUT", 12}, {"OUTPUT", 13}, {"STOP", 14}};
 }
 
 void Montador::assemble(const std::string &inputFile, const std::string &outputFile)
@@ -89,7 +89,7 @@ bool Montador::isDirective(const std::string &token)
 {
     std::string upperToken = token;
     std::transform(upperToken.begin(), upperToken.end(), upperToken.begin(), ::toupper);
-    return upperToken == "BEGIN" || upperToken == "END" || upperToken == "EXTERN" || upperToken == "PUBLIC";
+    return upperToken == "BEGIN" || upperToken == "END" || upperToken == "EXTERN" || upperToken == "PUBLIC" || upperToken == "CONST" || upperToken == "SPACE";
 }
 
 void Montador::handleDirective(const std::string &directive, const std::string &operand)
@@ -120,9 +120,23 @@ void Montador::handleDirective(const std::string &directive, const std::string &
             symbolTable[operand] = {currentAddress, false, true, false};
         }
     }
+    else if (upperDirective == "CONST")
+    {
+        symbolTable[operand] = {std::stoi(operand), false, false, true};
+        objectCode.push_back(operand);
+        relocationTable.push_back(1); // Operand is relocatable
+        currentAddress++;
+    }
+    else if (upperDirective == "SPACE")
+    {
+        symbolTable[operand] = {0, false, false, true};
+        objectCode.push_back("00");
+        relocationTable.push_back(1); // Operand is relocatable
+        currentAddress++;
+    }
 }
 
-void Montador::handleInstruction(const std::string &instruction, const std::string &operand)
+void Montador::handleInstruction(const std::string &instruction, const std::string &operands)
 {
     std::string upperInstruction = instruction;
     std::transform(upperInstruction.begin(), upperInstruction.end(), upperInstruction.begin(), ::toupper);
@@ -136,53 +150,69 @@ void Montador::handleInstruction(const std::string &instruction, const std::stri
     int opcode = instructionSet[upperInstruction];
     std::stringstream ss;
 
-    if (opcode != -1)
-    { // Handle normal instructions
-        ss << std::hex << std::setw(2) << std::setfill('0') << opcode;
+    ss << std::hex << std::setw(2) << std::setfill('0') << opcode;
 
-        if (!operand.empty())
+    if (upperInstruction == "COPY")
+    {
+        auto operandsTokens = split(operands, ',');
+        if (operandsTokens.size() != 2)
         {
+            std::cerr << "Error: COPY instruction requires two operands." << std::endl;
+            return;
+        }
+
+        for (size_t i = 0; i < operandsTokens.size(); ++i)
+        {
+            std::string operand = trim(operandsTokens[i]);
+
             if (symbolTable.find(operand) == symbolTable.end())
             {
                 symbolTable[operand] = {0, false, false, false};
-                symbolTable[operand].references.push_back(currentAddress + 1); // Operand address
+                symbolTable[operand].references.push_back(currentAddress + 1 + i); // Operand address
             }
             else if (!symbolTable[operand].defined)
             {
-                symbolTable[operand].references.push_back(currentAddress + 1); // Operand address
+                symbolTable[operand].references.push_back(currentAddress + 1 + i); // Operand address
             }
 
             ss << " " << std::setw(2) << std::setfill('0') << symbolTable[operand].address;
 
             if (symbolTable[operand].isExtern)
             {
-                updateUsageTable(operand, currentAddress + 1);
+                updateUsageTable(operand, currentAddress + 1 + i);
             }
-            relocationTable.push_back(0); // Opcode
-            relocationTable.push_back(1); // Operand
+            relocationTable.push_back(1); // Both operands are relocatable
         }
-        else
-        {
-            ss << " 00";
-            relocationTable.push_back(0); // Opcode
-            relocationTable.push_back(0); // No operand
-        }
+
+        currentAddress += 3; // COPY instruction occupies 3 bytes
     }
     else
-    { // Handle CONST and SPACE
-        if (upperInstruction == "CONST")
+    {
+        std::string operand = trim(operands);
+
+        if (symbolTable.find(operand) == symbolTable.end())
         {
-            ss << operand;
+            symbolTable[operand] = {0, false, false, false};
+            symbolTable[operand].references.push_back(currentAddress + 1); // Operand address
         }
-        else if (upperInstruction == "SPACE")
+        else if (!symbolTable[operand].defined)
         {
-            ss << "00";
+            symbolTable[operand].references.push_back(currentAddress + 1); // Operand address
         }
+
+        ss << " " << std::setw(2) << std::setfill('0') << symbolTable[operand].address;
+
+        if (symbolTable[operand].isExtern)
+        {
+            updateUsageTable(operand, currentAddress + 1);
+        }
+        relocationTable.push_back(0); // Opcode is not relocatable
         relocationTable.push_back(1); // Operand is relocatable
+
+        currentAddress += 2; // Other instructions occupy 2 bytes
     }
 
     objectCode.push_back(ss.str());
-    currentAddress += 2; // Each instruction has 2 bytes
 }
 
 void Montador::updateUsageTable(const std::string &symbol, int address)

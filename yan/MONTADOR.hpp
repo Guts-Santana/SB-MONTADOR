@@ -13,7 +13,7 @@ struct Symbol
     bool isExtern;
     bool isPublic;
     bool defined;
-    std::vector<int> references; // For backpatching
+    std::vector<int> references;
 };
 
 class Montador
@@ -26,6 +26,8 @@ private:
     void parseLine(const std::string &line);
     void handleDirective(const std::string &directive, const std::string &operand);
     void handleInstruction(const std::string &instruction, const std::string &operand);
+    void handleCopy(const std::string &instruction, const std::string &operand, std::string &operand2);
+
     void updateUsageTable(const std::string &symbol, int address);
     void backpatch();
     void writeObjectFile(const std::string &outputFile);
@@ -39,10 +41,9 @@ private:
 
     std::map<std::string, int> instructionSet;
 
-    // Helper functions
     std::vector<std::string> split(const std::string &s, char delimiter);
     std::string trim(const std::string &s);
     bool isDirective(const std::string &token);
 };
 
-#endif // MONTADOR_HPP
+#endif
