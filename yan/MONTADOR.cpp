@@ -1,12 +1,10 @@
 #include "MONTADOR.hpp"
-#include <sstream>
-#include <iomanip>
-#include <algorithm> // Para std::transform
-#include <cctype>    // Para std::toupper
+#include <algorithm>
+#include <cctype>
 
 Montador::Montador() : currentAddress(0), isBeginEnd(false)
 {
-    // Mapa de instruções para opcode (simulação)
+
     instructionSet = {
         {"ADD", 1}, {"SUB", 2}, {"MUL", 3}, {"DIV", 4}, {"JMP", 5}, {"JMPN", 6}, {"JMPP", 7}, {"JMPZ", 8}, {"COPY", 9}, {"LOAD", 10}, {"STORE", 11}, {"INPUT", 12}, {"OUTPUT", 13}, {"STOP", 14}};
 }
@@ -36,13 +34,11 @@ void Montador::parseLine(const std::string &line)
 {
     std::string trimmedLine = trim(line);
 
-    // Ignore empty lines and comments
     if (trimmedLine.empty() || trimmedLine[0] == ';')
         return;
 
     auto tokens = split(trimmedLine, ' ');
 
-    // Check if the line contains a label
     if (tokens[0].back() == ':')
     {
         std::string label = tokens[0].substr(0, tokens[0].length() - 1);
@@ -103,7 +99,6 @@ void Montador::handleDirective(const std::string &directive, const std::string &
     }
     else if (upperDirective == "END")
     {
-        // No special action needed
     }
     else if (upperDirective == "EXTERN")
     {
@@ -122,16 +117,18 @@ void Montador::handleDirective(const std::string &directive, const std::string &
     }
     else if (upperDirective == "CONST")
     {
-        symbolTable[operand] = {std::stoi(operand), false, false, true};
-        objectCode.push_back(operand);
-        relocationTable.push_back(1); // Operand is relocatable
-        currentAddress++;
+        if (!operand.empty())
+        {
+            int value = std::stoi(operand);
+            objectCode.push_back(toHex(value));
+            relocationTable.push_back(0);
+            currentAddress++;
+        }
     }
     else if (upperDirective == "SPACE")
     {
-        symbolTable[operand] = {0, false, false, true};
         objectCode.push_back("00");
-        relocationTable.push_back(1); // Operand is relocatable
+        relocationTable.push_back(0);
         currentAddress++;
     }
 }
@@ -168,11 +165,11 @@ void Montador::handleInstruction(const std::string &instruction, const std::stri
             if (symbolTable.find(operand) == symbolTable.end())
             {
                 symbolTable[operand] = {0, false, false, false};
-                symbolTable[operand].references.push_back(currentAddress + 1 + i); // Operand address
+                symbolTable[operand].references.push_back(currentAddress + 1 + i);
             }
             else if (!symbolTable[operand].defined)
             {
-                symbolTable[operand].references.push_back(currentAddress + 1 + i); // Operand address
+                symbolTable[operand].references.push_back(currentAddress + 1 + i);
             }
 
             ss << " " << std::setw(2) << std::setfill('0') << symbolTable[operand].address;
@@ -181,10 +178,10 @@ void Montador::handleInstruction(const std::string &instruction, const std::stri
             {
                 updateUsageTable(operand, currentAddress + 1 + i);
             }
-            relocationTable.push_back(1); // Both operands are relocatable
+            relocationTable.push_back(1);
         }
 
-        currentAddress += 3; // COPY instruction occupies 3 bytes
+        currentAddress += 3;
     }
     else
     {
@@ -193,11 +190,11 @@ void Montador::handleInstruction(const std::string &instruction, const std::stri
         if (symbolTable.find(operand) == symbolTable.end())
         {
             symbolTable[operand] = {0, false, false, false};
-            symbolTable[operand].references.push_back(currentAddress + 1); // Operand address
+            symbolTable[operand].references.push_back(currentAddress + 1);
         }
         else if (!symbolTable[operand].defined)
         {
-            symbolTable[operand].references.push_back(currentAddress + 1); // Operand address
+            symbolTable[operand].references.push_back(currentAddress + 1);
         }
 
         ss << " " << std::setw(2) << std::setfill('0') << symbolTable[operand].address;
@@ -206,10 +203,10 @@ void Montador::handleInstruction(const std::string &instruction, const std::stri
         {
             updateUsageTable(operand, currentAddress + 1);
         }
-        relocationTable.push_back(0); // Opcode is not relocatable
-        relocationTable.push_back(1); // Operand is relocatable
+        relocationTable.push_back(0);
+        relocationTable.push_back(1);
 
-        currentAddress += 2; // Other instructions occupy 2 bytes
+        currentAddress += 2;
     }
 
     objectCode.push_back(ss.str());
@@ -217,8 +214,7 @@ void Montador::handleInstruction(const std::string &instruction, const std::stri
 
 void Montador::updateUsageTable(const std::string &symbol, int address)
 {
-    std::cout << "Usage: " << symbol << " " << address << std::endl;
-    usageTable.emplace_back(symbol, address);
+    usageTable.emplace_back(Usage{symbol, address});
 }
 
 void Montador::backpatch()
@@ -251,7 +247,7 @@ void Montador::writeObjectFile(const std::string &outputFile)
         outfile << "USO\n";
         for (const auto &entry : usageTable)
         {
-            outfile << entry.first << " " << entry.second << "\n";
+            outfile << entry.symbol << " " << entry.address << "\n";
         }
 
         outfile << "DEF\n";
@@ -279,6 +275,33 @@ void Montador::writeObjectFile(const std::string &outputFile)
     outfile.close();
 }
 
+void Montador::writePendingList(const std::string &outputFile)
+{
+    std::ofstream outfile(outputFile, std::ios_base::app);
+
+    if (!outfile)
+    {
+        std::cerr << "Error: Cannot open file " << outputFile << std::endl;
+        return;
+    }
+
+    outfile << "PENDING REFERENCES\n";
+    for (const auto &entry : symbolTable)
+    {
+        if (!entry.second.defined && !entry.second.references.empty())
+        {
+            outfile << entry.first << ": ";
+            for (const int &ref : entry.second.references)
+            {
+                outfile << ref << " ";
+            }
+            outfile << "\n";
+        }
+    }
+
+    outfile.close();
+}
+
 std::vector<std::string> Montador::split(const std::string &s, char delimiter)
 {
     std::vector<std::string> tokens;
@@ -298,11 +321,18 @@ std::string Montador::trim(const std::string &s)
     return (start == std::string::npos || end == std::string::npos) ? "" : s.substr(start, end - start + 1);
 }
 
+std::string Montador::toHex(int num)
+{
+    std::stringstream ss;
+    ss << std::hex << std::setw(2) << std::setfill('0') << num;
+    return ss.str();
+}
+
 int main(int argc, char *argv[])
 {
     if (argc != 3)
     {
-        std::cerr << "Usage: " << argv[0] << " -o <inputfile.asm>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " -o <inputfile.asm> or " << argv[0] << " -p <inputfile.asm>" << std::endl;
         return 1;
     }
 
@@ -310,10 +340,16 @@ int main(int argc, char *argv[])
     std::string inputFile = argv[2];
     std::string outputFile = inputFile.substr(0, inputFile.find_last_of('.')) + ".obj";
 
+    Montador montador;
+
     if (option == "-o")
     {
-        Montador montador;
         montador.assemble(inputFile, outputFile);
+    }
+    else if (option == "-p")
+    {
+        montador.assemble(inputFile, outputFile);
+        montador.writePendingList(outputFile);
     }
     else
     {

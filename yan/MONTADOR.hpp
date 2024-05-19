@@ -3,45 +3,53 @@
 
 #include <iostream>
 #include <fstream>
-#include <string>
+#include <sstream>
+#include <iomanip>
 #include <map>
 #include <vector>
-
-struct Symbol
-{
-    int address;
-    bool isExtern;
-    bool isPublic;
-    bool defined;
-    std::vector<int> references;
-};
+#include <string>
 
 class Montador
 {
 public:
     Montador();
     void assemble(const std::string &inputFile, const std::string &outputFile);
+    void writePendingList(const std::string &outputFile);
 
 private:
+    struct Symbol
+    {
+        int address;
+        bool isExtern;
+        bool isPublic;
+        bool defined;
+        std::vector<int> references;
+    };
+
+    struct Usage
+    {
+        std::string symbol;
+        int address;
+    };
+
     void parseLine(const std::string &line);
+    bool isDirective(const std::string &token);
     void handleDirective(const std::string &directive, const std::string &operand);
-    void handleInstruction(const std::string &instruction, const std::string &operand);
+    void handleInstruction(const std::string &instruction, const std::string &operands);
     void updateUsageTable(const std::string &symbol, int address);
     void backpatch();
     void writeObjectFile(const std::string &outputFile);
-
-    std::map<std::string, Symbol> symbolTable;
-    std::vector<std::pair<std::string, int>> usageTable;
-    std::vector<std::string> objectCode;
-    std::vector<int> relocationTable;
-    int currentAddress;
-    bool isBeginEnd;
-
-    std::map<std::string, int> instructionSet;
-
     std::vector<std::string> split(const std::string &s, char delimiter);
     std::string trim(const std::string &s);
-    bool isDirective(const std::string &token);
+    std::string toHex(int num);
+
+    int currentAddress;
+    bool isBeginEnd;
+    std::map<std::string, int> instructionSet;
+    std::map<std::string, Symbol> symbolTable;
+    std::vector<std::string> objectCode;
+    std::vector<int> relocationTable;
+    std::vector<Usage> usageTable;
 };
 
-#endif
+#endif // MONTADOR_HPP
