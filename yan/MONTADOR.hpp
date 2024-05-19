@@ -13,8 +13,8 @@ class Montador
 {
 public:
     Montador();
-    void assemble(const std::string &inputFile, const std::string &outputFile);
-    void writePendingList(const std::string &outputFile);
+    void assemble(const std::string &inputFile, const std::string &outputFile, bool showPendingReferences = false);
+    void showPendingList(const std::string &outputFile);
 
 private:
     struct Symbol

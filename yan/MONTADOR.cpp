@@ -6,10 +6,23 @@ Montador::Montador() : currentAddress(0), isBeginEnd(false)
 {
 
     instructionSet = {
-        {"ADD", 1}, {"SUB", 2}, {"MUL", 3}, {"DIV", 4}, {"JMP", 5}, {"JMPN", 6}, {"JMPP", 7}, {"JMPZ", 8}, {"COPY", 9}, {"LOAD", 10}, {"STORE", 11}, {"INPUT", 12}, {"OUTPUT", 13}, {"STOP", 14}};
+        {"ADD", 1},
+        {"SUB", 2},
+        {"MUL", 3},
+        {"DIV", 4},
+        {"JMP", 5},
+        {"JMPN", 6},
+        {"JMPP", 7},
+        {"JMPZ", 8},
+        {"COPY", 9},
+        {"LOAD", 10},
+        {"STORE", 11},
+        {"INPUT", 12},
+        {"OUTPUT", 13},
+        {"STOP", 14}};
 }
 
-void Montador::assemble(const std::string &inputFile, const std::string &outputFile)
+void Montador::assemble(const std::string &inputFile, const std::string &outputFile, bool showPending)
 {
     std::ifstream infile(inputFile);
     std::string line;
@@ -22,6 +35,9 @@ void Montador::assemble(const std::string &inputFile, const std::string &outputF
 
     while (std::getline(infile, line))
     {
+        if (showPending)
+            showPendingList(outputFile);
+
         parseLine(line);
     }
 
@@ -275,31 +291,21 @@ void Montador::writeObjectFile(const std::string &outputFile)
     outfile.close();
 }
 
-void Montador::writePendingList(const std::string &outputFile)
+void Montador::showPendingList(const std::string &outputFile)
 {
-    std::ofstream outfile(outputFile, std::ios_base::app);
-
-    if (!outfile)
-    {
-        std::cerr << "Error: Cannot open file " << outputFile << std::endl;
-        return;
-    }
-
-    outfile << "PENDING REFERENCES\n";
+    std::cout << "\n\nPENDING REFERENCES\n";
     for (const auto &entry : symbolTable)
     {
         if (!entry.second.defined && !entry.second.references.empty())
         {
-            outfile << entry.first << ": ";
+            std::cout << entry.first << ": ";
             for (const int &ref : entry.second.references)
             {
-                outfile << ref << " ";
+                std::cout << ref << " ";
             }
-            outfile << "\n";
+            std::cout << "\n";
         }
     }
-
-    outfile.close();
 }
 
 std::vector<std::string> Montador::split(const std::string &s, char delimiter)
@@ -348,8 +354,7 @@ int main(int argc, char *argv[])
     }
     else if (option == "-p")
     {
-        montador.assemble(inputFile, outputFile);
-        montador.writePendingList(outputFile);
+        montador.assemble(inputFile, outputFile, true);
     }
     else
     {
