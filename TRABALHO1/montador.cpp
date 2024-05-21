@@ -149,7 +149,7 @@ void ESCRITA(std::string filename)
 					<< "\n";
 			for (int i = 0; i < realocationTable.size(); i++)
 			{
-				arquivo << realocationTable[i] << " ";
+				arquivo << realocationTable[i];
 			}
 			arquivo << '\n';
 		}
