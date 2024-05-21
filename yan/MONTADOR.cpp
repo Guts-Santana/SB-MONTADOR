@@ -230,7 +230,7 @@ void Montador::handleInstruction(const std::string &instruction, const std::stri
 
 void Montador::updateUsageTable(const std::string &symbol, int address)
 {
-    usageTable.emplace_back(Usage{symbol, address});
+    definitionTable.emplace_back(Usage{symbol, address});
 }
 
 void Montador::backpatch()
@@ -261,7 +261,7 @@ void Montador::writeObjectFile(const std::string &outputFile)
     if (isBeginEnd)
     {
         outfile << "USO\n";
-        for (const auto &entry : usageTable)
+        for (const auto &entry : definitionTable)
         {
             outfile << entry.symbol << " " << entry.address << "\n";
         }

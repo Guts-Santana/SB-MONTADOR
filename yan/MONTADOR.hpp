@@ -49,7 +49,7 @@ private:
     std::map<std::string, Symbol> symbolTable;
     std::vector<std::string> objectCode;
     std::vector<int> relocationTable;
-    std::vector<Usage> usageTable;
+    std::vector<Usage> definitionTable;
 };
 
 #endif // MONTADOR_HPP

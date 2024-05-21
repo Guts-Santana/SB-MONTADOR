@@ -28,7 +28,7 @@ void CASO_BASE(std::vector<std::string> linha);
 
 std::vector<std::string> PROCURA_LABEL(std::vector<std::string> linha);
 
-void ESCREVE_PROGRAMA(std::vector<std::string> linha);
+void ESCREVE_PROGRAMA(std::vector<std::string> linha, bool shouldBeLinked = false);
 
 void ESCREVE_SIMBOLOS(std::vector<std::string> linha);
 

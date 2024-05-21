@@ -9,14 +9,13 @@
 
 bool shouldBeLinked = false;
 
-std::unordered_map<std::string, std::vector<int>> definitionTable;
 std::unordered_map<std::string, std::vector<int>> usageTable;
+std::unordered_map<std::string, std::vector<int>> definitionTable;
 std::vector<int> realocationTable;
 
 void LEITURA(std::string filename);
 void ESCRITA(std::string filename);
 std::vector<std::string> PROCURA_LABEL(std::vector<std::string> linha);
-void ESCREVE_PROGRAMA(std::vector<std::string> linha);
 void ESCREVE_SIMBOLOS(std::vector<std::string> linha);
 std::vector<std::string> INS_COPY(std::vector<std::string> linha);
 
@@ -69,27 +68,31 @@ void LEITURA(std::string filename)
 		if (linha[0] == "BEGIN")
 		{
 			shouldBeLinked = true;
+			contador_linha++;
+			continue;
 		}
 
 		if (linha[0] == "END")
 		{
+			contador_linha++;
+			continue;
 		}
 
 		if (linha[0] == "EXTERN")
 		{
-			definitionTable[LABELS.back()].push_back(-1);
+			usageTable[LABELS.back()].push_back(-1);
 		}
 
 		if (linha[0] == "PUBLIC")
 		{
-			usageTable[LABELS.back()].push_back(-1);
+			definitionTable[LABELS.back()].push_back(-1);
 		}
 
 		if (linha[0] == "COPY")
 		{
 			linha = INS_COPY(linha);
 		}
-		ESCREVE_PROGRAMA(linha);
+		ESCREVE_PROGRAMA(linha, shouldBeLinked);
 		if (linha.size() > 1 || (linha.size() == 1 && linha[0].back() != ':'))
 			if (linha.size() != 1 && linha[0].back() != ':')
 				PC += linha.size();
@@ -116,19 +119,6 @@ void ESCRITA(std::string filename)
 	{
 		if (shouldBeLinked)
 		{
-			arquivo << "DEF"
-					<< "\n";
-			for (auto it = definitionTable.begin(); it != definitionTable.end(); it++)
-			{
-				arquivo << it->first << " ";
-				for (int i = 0; i < it->second.size(); i++)
-				{
-					if (it->second[i] != -1)
-						arquivo << it->second[i] << " ";
-				}
-				arquivo << '\n';
-			}
-
 			arquivo << "USO"
 					<< "\n";
 			for (auto it = usageTable.begin(); it != usageTable.end(); it++)
@@ -139,8 +129,21 @@ void ESCRITA(std::string filename)
 					if (it->second[i] != -1)
 						arquivo << it->second[i] << " ";
 				}
-				arquivo << '\n';
 			}
+			arquivo << '\n';
+
+			arquivo << "DEF"
+					<< "\n";
+			for (auto it = definitionTable.begin(); it != definitionTable.end(); it++)
+			{
+				arquivo << it->first << " ";
+				for (int i = 0; i < it->second.size(); i++)
+				{
+					if (it->second[i] != -1)
+						arquivo << it->second[i] << " ";
+				}
+			}
+			arquivo << '\n';
 
 			arquivo << "REAL"
 					<< "\n";
@@ -148,6 +151,7 @@ void ESCRITA(std::string filename)
 			{
 				arquivo << realocationTable[i] << " ";
 			}
+			arquivo << '\n';
 		}
 		for (std::string i : PROGRAMA)
 		{
@@ -210,24 +214,24 @@ std::vector<std::string> PROCURA_LABEL(std::vector<std::string> linha)
  * que será utilizado para escrever o arquivo.obj
  * @param linha a linha lida do arquivo.pre, sem definição de label.
  */
-void ESCREVE_PROGRAMA(std::vector<std::string> linha)
+void ESCREVE_PROGRAMA(std::vector<std::string> linha, bool shouldBeLinked)
 {
 	int posicao;
 	for (int i = 0; i < linha.size(); i++)
 	{
 		// TESTA SE É PUBLIC
-		auto it = usageTable.find(linha[i]);
-		if (it != usageTable.end())
+		auto it = definitionTable.find(linha[i]);
+		if (it != definitionTable.end())
 		{
-			usageTable[linha[i]].push_back(PC);
+			definitionTable[linha[i]].push_back(PC);
 			continue;
 		}
 
 		// TESTA SE É EXTERN
-		it = definitionTable.find(linha[i]);
-		if (it != definitionTable.end())
+		it = usageTable.find(linha[i]);
+		if (it != usageTable.end())
 		{
-			definitionTable[linha[i]].push_back(PC);
+			usageTable[linha[i]].push_back(PC);
 			continue;
 		}
 
