@@ -80,12 +80,16 @@ void LEITURA(std::string filename)
 
 		if (linha[0] == "EXTERN")
 		{
+			contador_linha++;
 			usageTable[LABELS.back()].push_back(-1);
+			continue;
 		}
 
 		if (linha[0] == "PUBLIC")
 		{
+			contador_linha++;
 			definitionTable[LABELS.back()].push_back(-1);
+			continue;
 		}
 
 		if (linha[0] == "COPY")
@@ -219,26 +223,36 @@ void ESCREVE_PROGRAMA(std::vector<std::string> linha, bool shouldBeLinked)
 	int posicao;
 	for (int i = 0; i < linha.size(); i++)
 	{
-		// TESTA SE É PUBLIC
-		auto it = definitionTable.find(linha[i]);
-		if (it != definitionTable.end())
+		if (shouldBeLinked)
 		{
-			definitionTable[linha[i]].push_back(PC);
-			continue;
-		}
+			// TESTA SE É PUBLIC
+			auto it = definitionTable.find(linha[i]);
+			if (it != definitionTable.end())
+			{
+				realocationTable.push_back(1);
+				realocationTable.push_back(PC + i);
+				definitionTable[linha[i]].push_back(PC);
+				PROGRAMA.push_back("0");
+				continue;
+			}
 
-		// TESTA SE É EXTERN
-		it = usageTable.find(linha[i]);
-		if (it != usageTable.end())
-		{
-			usageTable[linha[i]].push_back(PC);
-			continue;
+			// TESTA SE É EXTERN
+			it = usageTable.find(linha[i]);
+			if (it != usageTable.end())
+			{
+				realocationTable.push_back(1);
+				usageTable[linha[i]].push_back(PC);
+				PROGRAMA.push_back("0");
+				continue;
+			}
 		}
 
 		// TESTA SE É OPCODE
 		auto it1 = std::find(OPCODES.begin(), OPCODES.end(), linha[i]);
 		if (it1 != OPCODES.end())
 		{
+			if (shouldBeLinked)
+				realocationTable.push_back(0);
 			posicao = std::distance(OPCODES.begin(), it1);
 			PROGRAMA.push_back(VALOR_OPCODES[posicao]);
 			continue;
@@ -247,6 +261,8 @@ void ESCREVE_PROGRAMA(std::vector<std::string> linha, bool shouldBeLinked)
 		it1 = std::find(LABELS.begin(), LABELS.end(), linha[i]);
 		if (it1 != LABELS.end())
 		{
+			if (shouldBeLinked)
+				realocationTable.push_back(1);
 			posicao = std::distance(LABELS.begin(), it1);
 			PROGRAMA.push_back(LABEL_ENDERECO[posicao]);
 			continue;
@@ -255,6 +271,7 @@ void ESCREVE_PROGRAMA(std::vector<std::string> linha, bool shouldBeLinked)
 		it1 = std::find(SIMBOLOS.begin(), SIMBOLOS.end(), linha[i]);
 		if (it1 != SIMBOLOS.end())
 		{
+			realocationTable.push_back(1);
 			posicao = std::distance(SIMBOLOS.begin(), it1);
 			PROGRAMA.push_back(SIMBOLOS_ENDERECO[posicao]);
 			SIMBOLOS_ENDERECO[posicao] = (std::to_string(PC + i));
@@ -263,6 +280,8 @@ void ESCREVE_PROGRAMA(std::vector<std::string> linha, bool shouldBeLinked)
 
 		if (linha[0].back() == ':')
 		{
+			if (shouldBeLinked)
+				realocationTable.push_back(0);
 			ESCREVE_SIMBOLOS(linha);
 			break;
 		}
@@ -271,6 +290,8 @@ void ESCREVE_PROGRAMA(std::vector<std::string> linha, bool shouldBeLinked)
 			if (linha[0] != "JMP" && linha[0] != "JMPP" &&
 				linha[0] != "JMPZ" && linha[0] != "JMPN")
 			{
+				if (shouldBeLinked)
+					realocationTable.push_back(1);
 				SIMBOLOS.push_back(linha[i]);
 				SIMBOLOS_ENDERECO.push_back(std::to_string(PC + i));
 				PROGRAMA.push_back("-1");
