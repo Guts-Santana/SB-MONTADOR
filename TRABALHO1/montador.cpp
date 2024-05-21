@@ -156,6 +156,7 @@ void ESCRITA(std::string filename)
 				arquivo << realocationTable[i];
 			}
 			arquivo << '\n';
+			arquivo << "\n";
 		}
 		for (std::string i : PROGRAMA)
 		{
@@ -221,6 +222,7 @@ std::vector<std::string> PROCURA_LABEL(std::vector<std::string> linha)
 void ESCREVE_PROGRAMA(std::vector<std::string> linha, bool shouldBeLinked)
 {
 	int posicao;
+	std::cout << linha[0] << " " << PC << std::endl;
 	for (int i = 0; i < linha.size(); i++)
 	{
 		if (shouldBeLinked)
@@ -230,8 +232,7 @@ void ESCREVE_PROGRAMA(std::vector<std::string> linha, bool shouldBeLinked)
 			if (it != definitionTable.end())
 			{
 				realocationTable.push_back(1);
-				realocationTable.push_back(PC + i);
-				definitionTable[linha[i]].push_back(PC);
+				definitionTable[linha[i]].push_back(PC + i + 1);
 				PROGRAMA.push_back("0");
 				continue;
 			}
@@ -241,7 +242,7 @@ void ESCREVE_PROGRAMA(std::vector<std::string> linha, bool shouldBeLinked)
 			if (it != usageTable.end())
 			{
 				realocationTable.push_back(1);
-				usageTable[linha[i]].push_back(PC);
+				usageTable[linha[i]].push_back(PC + i + 1);
 				PROGRAMA.push_back("0");
 				continue;
 			}
