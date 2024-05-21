@@ -15,6 +15,7 @@ std::vector<int> realocationTable;
 
 void LEITURA(std::string filename);
 void ESCRITA(std::string filename);
+void updateUsageTable(std::vector<std::string> linha);
 std::vector<std::string> PROCURA_LABEL(std::vector<std::string> linha);
 void ESCREVE_SIMBOLOS(std::vector<std::string> linha);
 std::vector<std::string> INS_COPY(std::vector<std::string> linha);
@@ -63,6 +64,9 @@ void LEITURA(std::string filename)
 		{
 			linha.push_back(word);
 		}
+
+		updateUsageTable(linha);
+
 		linha = PROCURA_LABEL(linha);
 
 		if (linha[0] == "BEGIN")
@@ -88,7 +92,7 @@ void LEITURA(std::string filename)
 		if (linha[0] == "PUBLIC")
 		{
 			contador_linha++;
-			definitionTable[LABELS.back()].push_back(-1);
+			definitionTable[linha[1]].push_back(-1);
 			continue;
 		}
 
@@ -103,6 +107,38 @@ void LEITURA(std::string filename)
 			else
 				PC++;
 		contador_linha++;
+	}
+}
+
+void updateUsageTable(std::vector<std::string> linha)
+{
+	if (linha[0].back() == ':')
+	{
+		std::string temp = linha[0];
+		temp.pop_back();
+
+		if (definitionTable.find(temp) != definitionTable.end())
+		{
+			std::vector<std::string> linhaTemp = linha; // Make a copy of linha
+
+			while (linhaTemp[0].back() == ':')
+				linhaTemp.erase(linhaTemp.begin());
+
+			if (linhaTemp[0] == "CONST")
+			{
+				definitionTable[temp].clear();
+				definitionTable[temp].push_back(std::stoi(linhaTemp[1]));
+			}
+			else if (linhaTemp[0] == "SPACE")
+			{
+				definitionTable[temp].clear();
+				definitionTable[temp].push_back(0);
+			}
+			else
+			{
+				definitionTable[temp].push_back(PC);
+			}
+		}
 	}
 }
 
@@ -133,7 +169,9 @@ void ESCRITA(std::string filename)
 					if (it->second[i] != -1)
 						arquivo << it->second[i] << " ";
 				}
+				arquivo << '\n';
 			}
+
 			arquivo << '\n';
 
 			arquivo << "DEF"
@@ -146,6 +184,7 @@ void ESCRITA(std::string filename)
 					if (it->second[i] != -1)
 						arquivo << it->second[i] << " ";
 				}
+				arquivo << '\n';
 			}
 			arquivo << '\n';
 
@@ -222,7 +261,6 @@ std::vector<std::string> PROCURA_LABEL(std::vector<std::string> linha)
 void ESCREVE_PROGRAMA(std::vector<std::string> linha, bool shouldBeLinked)
 {
 	int posicao;
-	std::cout << linha[0] << " " << PC << std::endl;
 	for (int i = 0; i < linha.size(); i++)
 	{
 		if (shouldBeLinked)
