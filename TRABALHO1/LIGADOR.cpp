@@ -130,21 +130,21 @@ void writeLinkedModule(const vector<int> &linkedCode, const string &filename)
 
 int main(int argc, char *argv[])
 {
-    if (argc != 3)
+    if (argc != 4 || string(argv[1]) != "-l")
     {
-        cerr << "Usage: " << argv[0] << " <MOD_A.obj> <MOD_B.obj>" << endl;
+        cerr << "Usage: " << argv[0] << "-l <MOD_A.obj> <MOD_B.obj>" << endl;
         return 1;
     }
 
-    string modAFile = argv[1];
-    string modBFile = argv[2];
+    string modAFile = argv[2];
+    string modBFile = argv[3];
 
     Module modA = readModule(modAFile);
     Module modB = readModule(modBFile);
 
     vector<int> linkedCode = linkModules(modA, modB);
 
-    writeLinkedModule(linkedCode, "EXEC.obj");
+    writeLinkedModule(linkedCode, "Arquivos/EXEC.obj");
 
     cout << "Modules linked successfully. Output written to EXEC.obj" << endl;
 

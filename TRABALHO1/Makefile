@@ -6,5 +6,9 @@ PROC: montador.cpp montador.hpp
 	g++ -std=c++11 -o montador montador.cpp
 	./montador -o "Arquivos/$(ARQUIVO)"
 
+LIG: LIGADOR.cpp LIGADOR.hpp
+	g++ -std=c++17 -o LIGADOR LIGADOR.cpp
+	./LIGADOR -l Arquivos/$(ARQUIVO1) Arquivos/$(ARQUIVO2)
+
 clean:
 	rm -f montador Arquivos/*.obj Arquivos/*.pre Arquivos/*.e
