@@ -15,7 +15,7 @@ std::vector<int> realocationTable;
 
 void LEITURA(std::string filename);
 void ESCRITA(std::string filename);
-void updateUsageTable(std::vector<std::string> linha);
+bool updateUsageTable(std::vector<std::string> linha);
 std::vector<std::string> PROCURA_LABEL(std::vector<std::string> linha);
 void ESCREVE_SIMBOLOS(std::vector<std::string> linha);
 std::vector<std::string> INS_COPY(std::vector<std::string> linha);
@@ -110,7 +110,7 @@ void LEITURA(std::string filename)
 	}
 }
 
-void updateUsageTable(std::vector<std::string> linha)
+bool updateUsageTable(std::vector<std::string> linha)
 {
 	if (linha[0].back() == ':')
 	{
@@ -138,8 +138,11 @@ void updateUsageTable(std::vector<std::string> linha)
 			{
 				definitionTable[temp].push_back(PC);
 			}
+
+			return true;
 		}
 	}
+	return false;
 }
 
 /**
@@ -265,18 +268,8 @@ void ESCREVE_PROGRAMA(std::vector<std::string> linha, bool shouldBeLinked)
 	{
 		if (shouldBeLinked)
 		{
-			// TESTA SE É PUBLIC
-			auto it = definitionTable.find(linha[i]);
-			if (it != definitionTable.end())
-			{
-				realocationTable.push_back(1);
-				definitionTable[linha[i]].push_back(PC + i + 1);
-				PROGRAMA.push_back("0");
-				continue;
-			}
-
 			// TESTA SE É EXTERN
-			it = usageTable.find(linha[i]);
+			auto it = usageTable.find(linha[i]);
 			if (it != usageTable.end())
 			{
 				realocationTable.push_back(1);
