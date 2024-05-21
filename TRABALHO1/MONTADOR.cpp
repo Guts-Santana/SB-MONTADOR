@@ -346,3 +346,29 @@ std::vector<std::string> Assembler::Assembler::ProcessCopyInstruction(std::vecto
     line.push_back(second_symbol);
     return line;
 }
+
+int main(int argc, char *argv[])
+{
+    if (argc != 3)
+    {
+        std::cerr << "Error opening file" << std::endl;
+        return 1;
+    }
+
+    std::string filename = argv[2];
+    Assembler::Assembler assembler;
+
+    try
+    {
+        assembler.ReadFile(filename);
+    }
+    catch (const std::invalid_argument &e)
+    {
+        std::cerr << e.what() << '\n';
+        std::cerr << "At line: " << assembler.line_counter << '\n';
+        return 1;
+    }
+
+    assembler.WriteFile(filename);
+    return 0;
+}

@@ -16,9 +16,9 @@ namespace Assembler
         Assembler();
         void ReadFile(const std::string &filename);
         void WriteFile(const std::string &filename);
+        int line_counter;
 
     private:
-        int line_counter;
         int PC;
         bool should_be_linked;
         std::vector<std::string> labels;
