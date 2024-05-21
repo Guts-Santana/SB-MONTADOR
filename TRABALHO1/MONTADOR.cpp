@@ -30,10 +30,7 @@ void Assembler::Assembler::ReadFile(const std::string &filename)
             parsed_line.push_back(word);
         }
 
-        if (UpdateUsageTable(parsed_line))
-        {
-            continue;
-        }
+        UpdateUsageTable(parsed_line);
 
         parsed_line = FindLabel(parsed_line);
 
@@ -87,7 +84,7 @@ void Assembler::Assembler::ReadFile(const std::string &filename)
     }
 }
 
-bool Assembler::Assembler::UpdateUsageTable(const std::vector<std::string> &line)
+void Assembler::Assembler::UpdateUsageTable(const std::vector<std::string> &line)
 {
     if (line[0].back() == ':')
     {
@@ -117,11 +114,8 @@ bool Assembler::Assembler::UpdateUsageTable(const std::vector<std::string> &line
             {
                 definition_table[temp].push_back(PC);
             }
-
-            return true;
         }
     }
-    return false;
 }
 
 void Assembler::Assembler::WriteFile(const std::string &filename)
@@ -150,7 +144,7 @@ void Assembler::Assembler::WriteFile(const std::string &filename)
             file << '\n';
         }
 
-        file << "DEF\n";
+        file << "\nDEF\n";
         for (const auto &[key, value] : definition_table)
         {
             file << key << " ";
@@ -171,6 +165,8 @@ void Assembler::Assembler::WriteFile(const std::string &filename)
         }
         file << '\n';
     }
+
+    file << '\n';
 
     for (const std::string &i : program)
     {

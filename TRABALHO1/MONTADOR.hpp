@@ -33,7 +33,7 @@ namespace Assembler
         std::unordered_map<std::string, std::vector<int>> definition_table;
         std::vector<int> relocation_table;
 
-        bool UpdateUsageTable(const std::vector<std::string> &line);
+        void UpdateUsageTable(const std::vector<std::string> &line);
         std::vector<std::string> FindLabel(std::vector<std::string> line);
         void WriteProgram(const std::vector<std::string> &line, bool shouldBeLinked = false);
         void WriteSymbols(const std::vector<std::string> &line);
