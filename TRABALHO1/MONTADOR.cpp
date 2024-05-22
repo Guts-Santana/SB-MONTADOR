@@ -120,7 +120,12 @@ void Assembler::Assembler::UpdateUsageTable(const std::vector<std::string> &line
 
 void Assembler::Assembler::WriteFile(const std::string &filename)
 {
-    std::string output_filename = filename.substr(0, filename.size() - 3) + "obj";
+    std::string output_filename;
+    if (should_be_linked)
+        output_filename = filename.substr(0, filename.size() - 3) + "e";
+    else
+        output_filename = filename.substr(0, filename.size() - 3) + "obj";
+
     std::ofstream file(output_filename);
     if (!file.is_open())
     {
