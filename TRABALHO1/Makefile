@@ -2,7 +2,11 @@ PRE: pre_processamento.cpp pre_processamento.hpp
 	g++ -std=c++17 -o montador pre_processamento.cpp
 	./montador -p "Arquivos/$(ARQUIVO)"
 
-PROC: MONTADOR.cpp MONTADOR.hpp
+PROC: montador.cpp montador.hpp
+	g++ -std=c++17 -o montador montador.cpp
+	./montador -o "Arquivos/$(ARQUIVO)"
+
+PROC2: MONTADOR.cpp MONTADOR.hpp
 	g++ -std=c++17 -o MONTADOR MONTADOR.cpp
 	./MONTADOR -o "Arquivos/$(ARQUIVO)"
 
