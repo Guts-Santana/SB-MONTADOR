@@ -1,27 +1,13 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <map>
+#include "LIGADOR.hpp"
 
-using namespace std;
-
-struct Module
+Module Linker::readModule(const std::string &filename)
 {
-    map<string, vector<int>> uso;
-    map<string, int> defs;
-    string real;
-    vector<int> code;
-};
-
-Module readModule(const string &filename)
-{
-    ifstream file(filename);
-    string line;
+    std::ifstream file(filename);
+    std::string line;
     Module module;
-    string section;
+    std::string section;
 
-    while (getline(file, line))
+    while (std::getline(file, line))
     {
         if (line.empty())
             continue;
@@ -40,8 +26,8 @@ Module readModule(const string &filename)
         }
         else if (section == "uso")
         {
-            istringstream iss(line);
-            string symbol;
+            std::istringstream iss(line);
+            std::string symbol;
             int addr;
             iss >> symbol;
             while (iss >> addr)
@@ -51,8 +37,8 @@ Module readModule(const string &filename)
         }
         else if (section == "def")
         {
-            istringstream iss(line);
-            string symbol;
+            std::istringstream iss(line);
+            std::string symbol;
             int addr;
             iss >> symbol >> addr;
             module.defs[symbol] = addr;
@@ -64,7 +50,7 @@ Module readModule(const string &filename)
         }
         else if (section == "code")
         {
-            istringstream iss(line);
+            std::istringstream iss(line);
             int instr;
             while (iss >> instr)
             {
@@ -77,11 +63,11 @@ Module readModule(const string &filename)
     return module;
 }
 
-vector<int> linkModules(Module &modA, Module &modB)
+std::vector<int> Linker::linkModules(Module &modA, Module &modB)
 {
     int correctionB = modA.code.size();
 
-    map<string, int> globalDefs = modA.defs;
+    std::map<std::string, int> globalDefs = modA.defs;
     for (const auto &[symbol, addr] : modB.defs)
     {
         globalDefs[symbol] = addr + correctionB;
@@ -111,42 +97,19 @@ vector<int> linkModules(Module &modA, Module &modB)
         }
     }
 
-    vector<int> linkedCode = modA.code;
+    std::vector<int> linkedCode = modA.code;
     linkedCode.insert(linkedCode.end(), modB.code.begin(), modB.code.end());
 
     return linkedCode;
 }
 
-void writeLinkedModule(const vector<int> &linkedCode, const string &filename)
+void Linker::writeLinkedModule(const std::vector<int> &linkedCode, const std::string &filename)
 {
-    ofstream outfile(filename);
+    std::ofstream outfile(filename);
     for (int instr : linkedCode)
     {
         outfile << instr << " ";
     }
-    outfile << endl;
+    outfile << std::endl;
     outfile.close();
-}
-
-int main(int argc, char *argv[])
-{
-    if (argc != 4 || string(argv[1]) != "-l")
-    {
-        cerr << "Usage: " << argv[0] << "-l <MOD_A.obj> <MOD_B.obj>" << endl;
-        return 1;
-    }
-
-    string modAFile = argv[2];
-    string modBFile = argv[3];
-
-    Module modA = readModule(modAFile);
-    Module modB = readModule(modBFile);
-
-    vector<int> linkedCode = linkModules(modA, modB);
-
-    writeLinkedModule(linkedCode, "Arquivos/EXEC.obj");
-
-    cout << "Modules linked successfully. Output written to EXEC.obj" << endl;
-
-    return 0;
 }

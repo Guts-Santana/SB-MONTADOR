@@ -1,34 +1,21 @@
 #include "pre_processamento.hpp"
 
-int main(int argc, char *argv[]){
-
-	if (argc != 3){
-		std::cerr << "Erro ao abrir arquivo";
-		return 1;
-	}
-	std::string filename = argv[2];
-
-	std::ifstream file(filename);
-	if (!file.is_open()){
-		std::cerr << "Arquivo Assembly não encontrado" << std::endl;
-		return 1;
-	}
-	LEITURA(filename);
-
-	return 0;
-}
+std::vector<std::string> VALOR_EQU;
+std::vector<std::string> LABEL_EQU;
 
 /*
-Essa função ocorre a leitura do arquivo assembly e 
+Essa função ocorre a leitura do arquivo assembly e
 chama as funções de pré-processamento
 */
-void LEITURA(std::string filename){
+void LEITURA(std::string filename)
+{
 	std::string line;
 	std::string word;
 	std::vector<std::string> linha;
 
 	std::ifstream file(filename);
-	if (!file.is_open()){
+	if (!file.is_open())
+	{
 		std::cerr << "Arquivo Assembly não encontrado" << std::endl;
 	}
 	filename.pop_back();
@@ -37,35 +24,40 @@ void LEITURA(std::string filename){
 	filename = filename + "pre";
 	std::ofstream arquivo(filename);
 
-	while (getline(file, line)){
+	while (getline(file, line))
+	{
 		std::istringstream iss(line);
 		linha.clear();
-		while (iss >> word){
+		while (iss >> word)
+		{
 			word = CASO(word);
 			if (COMENTARIO(word))
 				break;
 			word = ALTERA_EQUS(word);
 			linha.push_back(word);
-			//std::cout << word << std::endl;
+			// std::cout << word << std::endl;
 		}
-		if (EIF(linha)){
+		if (EIF(linha))
+		{
 			if (IFS(linha))
-				std::getline(file,line);
+				std::getline(file, line);
 			linha.clear();
 		}
-		if(DEFINE_EQUS(linha))
+		if (DEFINE_EQUS(linha))
 			linha.clear();
 
-		if (arquivo.is_open()){
-			for (int i = 0; i < (int)linha.size(); i++){
+		if (arquivo.is_open())
+		{
+			for (int i = 0; i < (int)linha.size(); i++)
+			{
 				std::cout << linha[i] << " ";
 				arquivo << linha[i] << " ";
 			}
-			if (linha.size() != 0){
+			if (linha.size() != 0)
+			{
 				std::cout << "\n";
 				arquivo << "\n";
 			}
-			
 		}
 	}
 	arquivo.close();
@@ -78,12 +70,15 @@ void LEITURA(std::string filename){
  * @return true caso seja um IF
  * @return false caso nao seja IF
  */
-bool EIF(std::vector<std::string> linha){
-	if (linha.size() == 2){
+bool EIF(std::vector<std::string> linha)
+{
+	if (linha.size() == 2)
+	{
 		if (linha[0] == "IF")
 			return true;
-		}
-	if (linha.size() >= 2){
+	}
+	if (linha.size() >= 2)
+	{
 		if (linha[0] == "IF" || linha[1] == "IF")
 			return true;
 	}
@@ -97,13 +92,16 @@ bool EIF(std::vector<std::string> linha){
  * @return true caso o if seja 0 e tenha que apagar a proxima linha
  * @return false caso o if seja verdadeiro e a proxima linha deve ser lida
  */
-bool IFS(std::vector<std::string> linha){	
-	//RETORNA UMA FLAG CASO IF 0;
-	if (linha.size() == 2){
+bool IFS(std::vector<std::string> linha)
+{
+	// RETORNA UMA FLAG CASO IF 0;
+	if (linha.size() == 2)
+	{
 		if (linha[1] == "0")
 			return true;
 	}
-	if (linha.size() > 2){
+	if (linha.size() > 2)
+	{
 		if (linha[1] == "0" || linha[2] == "0")
 			return true;
 	}
@@ -116,11 +114,14 @@ bool IFS(std::vector<std::string> linha){
  * @param linha a linha lida do arquivo.asm
  * @return true caso seja definicao de EQU e deva apagar a proxima linha
  * @return false caso nao seja definicao de EQU[
- * 
+ *
  */
-bool DEFINE_EQUS(std::vector<std::string> linha){
-	if (linha.size()>=3){
-		if (linha[1] == "EQU"){
+bool DEFINE_EQUS(std::vector<std::string> linha)
+{
+	if (linha.size() >= 3)
+	{
+		if (linha[1] == "EQU")
+		{
 			linha[0].pop_back();
 			LABEL_EQU.push_back(linha[0]);
 			VALOR_EQU.push_back(linha[2]);
@@ -136,10 +137,12 @@ bool DEFINE_EQUS(std::vector<std::string> linha){
  * @param linha a linha lida do arquivo.asm
  * @return retorna a linha com a alteração do EQU
  */
-std::string ALTERA_EQUS(std::string word){
+std::string ALTERA_EQUS(std::string word)
+{
 	auto it = std::find(LABEL_EQU.begin(), LABEL_EQU.end(), word);
-	if (it != LABEL_EQU.end()){
-    	int posicao = std::distance(LABEL_EQU.begin(), it);
+	if (it != LABEL_EQU.end())
+	{
+		int posicao = std::distance(LABEL_EQU.begin(), it);
 		word = VALOR_EQU[posicao];
 	}
 	return word;
@@ -147,15 +150,17 @@ std::string ALTERA_EQUS(std::string word){
 
 /**
  * @brief Essa função altera as palavras lidas para maiusculas
- * Para que assim o código nao seja sensivel ao caso de letras 
+ * Para que assim o código nao seja sensivel ao caso de letras
  * maiuscula ou minusculas
- * 
+ *
  * @param word recebe palavra a palavra lida pelo arquivo.asm
  * @return retorna a word no formato maiusculo
  */
-std::string CASO(std::string word){
+std::string CASO(std::string word)
+{
 	std::transform(word.begin(), word.end(), word.begin(),
-        [](unsigned char c){ return std::toupper(c); });
+				   [](unsigned char c)
+				   { return std::toupper(c); });
 	return word;
 }
 
@@ -163,8 +168,9 @@ std::string CASO(std::string word){
 Função que remove comentario
 Se TRUE a linha inteira é ignorada
 */
-bool COMENTARIO(std::string word){
-	if (word[0]==';')
+bool COMENTARIO(std::string word)
+{
+	if (word[0] == ';')
 		return true;
 	return false;
 }
