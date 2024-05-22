@@ -74,7 +74,7 @@ void Assembler::Assembler::ReadFile(const std::string &filename)
             {
                 PC += parsed_line.size();
             }
-            else
+            else if (parsed_line[0] != "STOP")
             {
                 PC++;
             }
@@ -325,10 +325,10 @@ void Assembler::Assembler::WriteSymbols(const std::vector<std::string> &line)
         while (program[pos] != "-1")
         {
             int temp = std::stoi(program[pos]);
-            program[pos] = std::to_string(PC);
+            program[pos] = std::to_string(PC + 1);
             pos = temp;
         }
-        program[pos] = std::to_string(PC);
+        program[pos] = std::to_string(PC + 1);
     }
 }
 
