@@ -104,7 +104,7 @@ void LEITURA(std::string filename)
 		if (linha.size() > 1 || (linha.size() == 1 && linha[0].back() != ':'))
 			if (linha.size() != 1 && linha[0].back() != ':')
 				PC += linha.size();
-			else
+			else if (linha[0] != "STOP")
 				PC++;
 		contador_linha++;
 	}
@@ -372,10 +372,10 @@ void ESCREVE_SIMBOLOS(std::vector<std::string> linha)
 		while (PROGRAMA[pos] != "-1")
 		{
 			temp = std::stoi(PROGRAMA[pos]);
-			PROGRAMA[pos] = std::to_string(PC);
+			PROGRAMA[pos] = std::to_string(PC + 1);
 			pos = (int)temp;
 		}
-		PROGRAMA[pos] = std::to_string(PC);
+		PROGRAMA[pos] = std::to_string(PC + 1);
 	}
 }
 
