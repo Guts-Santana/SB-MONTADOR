@@ -1,18 +1,18 @@
 # Compiler
 CXX = g++
-CXXFLAGS = -std=c++17
+CXXFLAGS = -std=c++17 -Iinclude
 
-# Source files
-SRCS = main.cpp LIGADOR.cpp MONTADOR.cpp pre_processamento.cpp
-HEADERS = $(wildcard *.h)
-OBJS = $(SRCS:.cpp=.o)
+# Source and header files
+SRCS = main.cpp $(wildcard src/*.cpp)
+HEADERS = $(wildcard include/*.h)
+OBJS = $(patsubst src/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
 
 # Directories
-BIN_DIR = bin
-SRC_DIR = src
+BIN_DIR = .
+OBJ_DIR = obj
 
 # Target executable
-TARGET = $(BIN_DIR)/assembler
+TARGET = $(BIN_DIR)/montador
 
 # Default target
 all: $(TARGET)
@@ -22,28 +22,30 @@ $(TARGET): $(OBJS) | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 # Rule for creating object files
-%.o: %.cpp $(HEADERS) | $(BIN_DIR)
+$(OBJ_DIR)/%.o: src/%.cpp $(HEADERS) | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-# Create the bin directory if it does not exist
-$(BIN_DIR):
-	mkdir -p $(BIN_DIR)
+# Create the bin and obj directories if they do not exist
+$(BIN_DIR) $(OBJ_DIR):
+	mkdir -p $@
 
-# Rule for processing .asm files
-%.asm:
-	./$(TARGET) -p $@
-	./$(TARGET) -o $@
+# Accept filename and preprocess/compile .asm files
+as: $(TARGET)
+	./$(TARGET) -p $(file)
+	./$(TARGET) -o $(basename $(file)).pre
 
-# Rule for linking files
-link:
-	@$(MAKE) $(file1)
-	@$(MAKE) $(file2)
-	./$(TARGET) -l $(file1:.asm=.e) $(file2:.asm=.e)
+# Link two files after preprocessing
+link: $(TARGET)
+	./$(TARGET) -p $(file1)
+	./$(TARGET) -o $(basename $(file1)).pre
+	./$(TARGET) -p $(file2)
+	./$(TARGET) -o $(basename $(file2)).pre
+	./$(TARGET) -l $(basename $(file1)).e $(basename $(file2)).e
 
 # Clean up
 clean:
-	rm -f $(OBJS) $(TARGET)
-	rm -rf $(BIN_DIR)
+	rm -f $(OBJ_DIR)/*.o $(TARGET)
+	rm -rf $(BIN_DIR)/$(TARGET) $(OBJ_DIR)
 
 # Phony targets
-.PHONY: all clean link
+.PHONY: all clean as link

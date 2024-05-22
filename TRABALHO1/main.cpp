@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
                 std::cout << "./montador -l <filename1> <filename2> -> Links the files\n";
                 std::cout << "./montador -h -> Shows available commands\n";
                 std::cout << "OR\n";
-                std::cout << "Run make <filename> to pre-process and assemble the file.'\n";
+                std::cout << "Run make as file=<filename> to pre-process and assemble the file.'\n";
                 std::cout << "Run make link file1=<filename1> file2=<filename2> to pre-process, assemble, and link the files.'\n";
                 return 0;
             }
@@ -76,7 +76,9 @@ int main(int argc, char *argv[])
                 Module modA = linker.readModule(filename1);
                 Module modB = linker.readModule(filename2);
                 std::vector<int> linkedCode = linker.linkModules(modA, modB);
-                linker.writeLinkedModule(linkedCode, "LINKED.txt");
+
+                std::string output_filename = filename1.substr(0, filename1.size() - 2) + "_linked.obj";
+                linker.writeLinkedModule(linkedCode, output_filename);
                 return 0;
             }
             else
