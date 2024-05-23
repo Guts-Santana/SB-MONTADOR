@@ -46,6 +46,7 @@ link: $(TARGET)
 clean:
 	rm -f $(OBJ_DIR)/*.o $(TARGET)
 	rm -rf $(BIN_DIR)/$(TARGET) $(OBJ_DIR)
+	rm -f Arquivos/*.obj Arquivos/*.pre Arquivos/*.e
 
 # Phony targets
 .PHONY: all clean as link

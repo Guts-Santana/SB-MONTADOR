@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
         if (argc == 1)
         {
             std::string flag = argv[1];
+			std::cout << flag;
             if (flag == "-help")
             {
                 std::cout << "Available commands:\n";
