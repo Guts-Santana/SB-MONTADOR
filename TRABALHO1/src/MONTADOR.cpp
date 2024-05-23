@@ -36,6 +36,7 @@ void Assembler::Assembler::ReadFile(const std::string &filename)
 
         if (parsed_line[0] == "BEGIN")
         {
+            definition_table[labels.back()].push_back(0);
             should_be_linked = true;
             line_counter++;
             continue;
