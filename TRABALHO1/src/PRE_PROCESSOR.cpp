@@ -1,13 +1,10 @@
-#include "pre_processamento.hpp"
-
-std::vector<std::string> VALOR_EQU;
-std::vector<std::string> LABEL_EQU;
+#include "PRE_PROCESSOR.hpp"
 
 /*
 Essa função ocorre a leitura do arquivo assembly e
 chama as funções de pré-processamento
 */
-void LEITURA(std::string filename)
+void PRE_PROCESSING::ReadFile(std::string filename)
 {
 	std::string line;
 	std::string word;
@@ -16,7 +13,7 @@ void LEITURA(std::string filename)
 	std::ifstream file(filename);
 	if (!file.is_open())
 	{
-		std::cerr << "Arquivo Assembly não encontrado" << std::endl;
+		std::cerr << "Assembly file not founded" << std::endl;
 	}
 	filename.pop_back();
 	filename.pop_back();
@@ -30,20 +27,20 @@ void LEITURA(std::string filename)
 		linha.clear();
 		while (iss >> word)
 		{
-			word = CASO(word);
-			if (COMENTARIO(word))
+			word = Uppercase(word);
+			if (Comments(word))
 				break;
-			word = ALTERA_EQUS(word);
+			word = FindEQU(word);
 			linha.push_back(word);
 			// std::cout << word << std::endl;
 		}
-		if (EIF(linha))
+		if (FindIf(linha))
 		{
-			if (IFS(linha))
+			if (IfAnalizer(linha))
 				std::getline(file, line);
 			linha.clear();
 		}
-		if (DEFINE_EQUS(linha))
+		if (DefineEQU(linha))
 			linha.clear();
 
 		if (arquivo.is_open())
@@ -70,7 +67,7 @@ void LEITURA(std::string filename)
  * @return true caso seja um IF
  * @return false caso nao seja IF
  */
-bool EIF(std::vector<std::string> linha)
+bool PRE_PROCESSING::FindIf(std::vector<std::string> linha)
 {
 	if (linha.size() == 2)
 	{
@@ -92,7 +89,7 @@ bool EIF(std::vector<std::string> linha)
  * @return true caso o if seja 0 e tenha que apagar a proxima linha
  * @return false caso o if seja verdadeiro e a proxima linha deve ser lida
  */
-bool IFS(std::vector<std::string> linha)
+bool PRE_PROCESSING::IfAnalizer(std::vector<std::string> linha)
 {
 	// RETORNA UMA FLAG CASO IF 0;
 	if (linha.size() == 2)
@@ -116,15 +113,15 @@ bool IFS(std::vector<std::string> linha)
  * @return false caso nao seja definicao de EQU[
  *
  */
-bool DEFINE_EQUS(std::vector<std::string> linha)
+bool PRE_PROCESSING::DefineEQU(std::vector<std::string> linha)
 {
 	if (linha.size() >= 3)
 	{
 		if (linha[1] == "EQU")
 		{
 			linha[0].pop_back();
-			LABEL_EQU.push_back(linha[0]);
-			VALOR_EQU.push_back(linha[2]);
+			EQU_LABEL.push_back(linha[0]);
+			EQU_VALUE.push_back(linha[2]);
 			return true;
 		}
 	}
@@ -137,13 +134,13 @@ bool DEFINE_EQUS(std::vector<std::string> linha)
  * @param linha a linha lida do arquivo.asm
  * @return retorna a linha com a alteração do EQU
  */
-std::string ALTERA_EQUS(std::string word)
+std::string PRE_PROCESSING::FindEQU(std::string word)
 {
-	auto it = std::find(LABEL_EQU.begin(), LABEL_EQU.end(), word);
-	if (it != LABEL_EQU.end())
+	auto it = std::find(EQU_LABEL.begin(), EQU_LABEL.end(), word);
+	if (it != EQU_LABEL.end())
 	{
-		int posicao = std::distance(LABEL_EQU.begin(), it);
-		word = VALOR_EQU[posicao];
+		int posicao = std::distance(EQU_LABEL.begin(), it);
+		word = EQU_VALUE[posicao];
 	}
 	return word;
 }
@@ -156,7 +153,7 @@ std::string ALTERA_EQUS(std::string word)
  * @param word recebe palavra a palavra lida pelo arquivo.asm
  * @return retorna a word no formato maiusculo
  */
-std::string CASO(std::string word)
+std::string PRE_PROCESSING::Uppercase(std::string word)
 {
 	std::transform(word.begin(), word.end(), word.begin(),
 				   [](unsigned char c)
@@ -168,7 +165,7 @@ std::string CASO(std::string word)
 Função que remove comentario
 Se TRUE a linha inteira é ignorada
 */
-bool COMENTARIO(std::string word)
+bool PRE_PROCESSING::Comments(std::string word)
 {
 	if (word[0] == ';')
 		return true;

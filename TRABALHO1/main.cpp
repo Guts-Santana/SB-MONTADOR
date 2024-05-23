@@ -1,6 +1,6 @@
 #include "MONTADOR.hpp"
 #include "LIGADOR.hpp"
-#include "pre_processamento.hpp"
+#include "PRE_PROCESSOR.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -57,7 +57,8 @@ int main(int argc, char *argv[])
             }
             else if (flag == "-p")
             {
-                LEITURA(filename);
+				PRE_PROCESSING PRE_PROCESSING;
+                PRE_PROCESSING.ReadFile(filename);
                 return 0;
             }
             else
