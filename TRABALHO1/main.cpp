@@ -53,8 +53,8 @@ int main(int argc, char *argv[])
                 }
                 catch (const std::invalid_argument &e)
                 {
-                    std::cerr << e.what() << '\n';
-                    std::cerr << "At line: " << assembler.line_counter << '\n';
+                    std::cerr << e.what() << std::endl;
+                    std::cerr << "At line: " << assembler.line_counter << std::endl;
                     return 1;
                 }
 
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     }
     catch (const std::exception &e)
     {
-        std::cerr << e.what() << '\n';
+        std::cerr << e.what() << std::endl;
     }
 
     return 0;
