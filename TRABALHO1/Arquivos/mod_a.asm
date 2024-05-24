@@ -3,7 +3,7 @@ Y: EXTERN          ; valor = 10
 MOD_B: EXTERN
 PUBLIC VAL
 PUBLIC L1
-OUTPUT K
+OUTPUT K           ; = 8
 OUTPUT Y           ; = 10
 JMP MOD_B
 L1: STOP
