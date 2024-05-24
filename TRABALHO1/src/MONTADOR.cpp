@@ -76,10 +76,9 @@ void Assembler::ReadFile(const std::string &filename)
             {
                 PC += parsed_line.size();
             }
-            else if (parsed_line[0] != "STOP")
+            else
                 PC++;
         }
-
         line_counter++;
     }
 }
