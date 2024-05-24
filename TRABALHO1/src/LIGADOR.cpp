@@ -28,10 +28,12 @@ void Linker::linkFiles(const std::string &file1, const std::string &file2)
         {
             if (relocationTable1[v - 1] == 1)
             {
-                definitionTable2[key][0] += correctionFactor;
+                code1[v - 1] = definitionTable2[key][0] + correctionFactor;
             }
-
-            code1[v - 1] = definitionTable2[key][0];
+            else
+            {
+                code1[v - 1] = definitionTable2[key][0];
+            }
         }
     }
 
