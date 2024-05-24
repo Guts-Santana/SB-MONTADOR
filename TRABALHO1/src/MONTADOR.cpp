@@ -36,6 +36,7 @@ void Assembler::ReadFile(const std::string &filename)
 
         if (parsed_line[0] == "BEGIN")
         {
+            UpdateDefinitionTable(parsed_line[1], 0);
             should_be_linked = true;
             line_counter++;
             continue;
@@ -84,13 +85,14 @@ void Assembler::ReadFile(const std::string &filename)
     }
 }
 
-void Assembler::UpdateDefinitionTable(std::string label, int value, bool isSymbol)
+void Assembler::UpdateDefinitionTable(std::string label, int value)
 {
     std::cout << label << ' ' << value << std::endl;
 
-    if (definition_table.find(label) != definition_table.end() && definition_table[label] != -1 && !isSymbol)
+    if (definition_table.find(label) != definition_table.end() && definition_table[label] != -1)
     {
-        std::cerr << "Key " + label + " already exists in definition table";
+        if (value != -1)
+            std::cerr << "Key " + label + " already exists in definition table";
     }
     else
     {
@@ -116,11 +118,11 @@ void Assembler::ParseDefinitionTable(const std::vector<std::string> &line)
 
             if (temp_line[0] == "CONST")
             {
-                UpdateDefinitionTable(temp, std::stoi(temp_line[1]), true);
+                UpdateDefinitionTable(temp, std::stoi(temp_line[1]));
             }
             else if (temp_line[0] == "SPACE")
             {
-                UpdateDefinitionTable(temp, 0, true);
+                UpdateDefinitionTable(temp, 0);
             }
             else
             {
