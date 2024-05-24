@@ -65,28 +65,22 @@ int main(int argc, char *argv[])
                 return 1;
             }
         }
-        // else if (argc == 4)
-        // {
-        //     std::string flag = argv[1];
-        //     std::string filename1 = argv[2];
-        //     std::string filename2 = argv[3];
-        //     if (flag == "-l")
-        //     {
-        //         Linker linker;
-        //         Module modA = linker.readModule(filename1);
-        //         Module modB = linker.readModule(filename2);
-        //         std::vector<int> linkedCode = linker.linkModules(modA, modB);
-
-        //         std::string output_filename = filename1.substr(0, filename1.size() - 2) + "_linked.obj";
-        //         linker.writeLinkedModule(linkedCode, output_filename);
-        //         return 0;
-        //     }
-        //     else
-        //     {
-        //         std::cerr << "Error opening file. See ./montador -help to see available commands." << std::endl;
-        //         return 1;
-        //     }
-        // }
+        else if (argc == 4)
+        {
+            std::string flag = argv[1];
+            std::string filename1 = argv[2];
+            std::string filename2 = argv[3];
+            if (flag == "-l")
+            {
+                linkFiles(filename1, filename2);
+                return 0;
+            }
+            else
+            {
+                std::cerr << "Error opening file. See ./montador -help to see available commands." << std::endl;
+                return 1;
+            }
+        }
     }
     catch (const std::exception &e)
     {

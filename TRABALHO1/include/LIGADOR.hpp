@@ -1,0 +1,1 @@
+void linkFiles(std::string file1, std::string file2);
