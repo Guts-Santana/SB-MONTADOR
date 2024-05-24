@@ -22,6 +22,7 @@ private:
     std::vector<std::string> labels;
     std::vector<std::string> label_addresses;
     std::vector<std::string> program;
+    std::vector<std::string> public_symbols;
     std::vector<std::string> symbols;
     std::vector<std::string> symbol_addresses;
     std::vector<std::string> opcodes;

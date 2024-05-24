@@ -59,6 +59,7 @@ void Assembler::ReadFile(const std::string &filename)
         {
             line_counter++;
             UpdateDefinitionTable(parsed_line[1], -1);
+            public_symbols.push_back(parsed_line[1]);
             continue;
         }
 
@@ -76,9 +77,7 @@ void Assembler::ReadFile(const std::string &filename)
                 PC += parsed_line.size();
             }
             else if (parsed_line[0] != "STOP")
-            {
                 PC++;
-            }
         }
 
         line_counter++;
@@ -317,22 +316,30 @@ void Assembler::WriteSymbols(const std::vector<std::string> &line)
     }
 
     auto symbol_it = std::find(symbols.begin(), symbols.end(), label);
-    if (symbol_it != symbols.end())
+    auto special_symbol_it = std::find(public_symbols.begin(), public_symbols.end(), label);
+
+    bool isSymbol = symbol_it != symbols.end();
+    bool is_public = special_symbol_it != public_symbols.end();
+
+    if (isSymbol || is_public)
     {
-        int position = std::distance(symbols.begin(), symbol_it);
         if (line[1] == "CONST")
         {
             program.push_back(line[2]);
+            if (is_public && !isSymbol)
+                return;
         }
         else if (line[1] == "SPACE")
         {
             program.push_back("0");
+            if (is_public && !isSymbol)
+                return;
         }
         else
         {
             throw std::invalid_argument("Error");
         }
-
+        int position = std::distance(symbols.begin(), symbol_it);
         int pos = std::stoi(symbol_addresses[position]);
         while (program[pos] != "-1")
         {
