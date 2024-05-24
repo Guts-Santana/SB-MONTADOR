@@ -72,7 +72,8 @@ int main(int argc, char *argv[])
             std::string filename2 = argv[3];
             if (flag == "-l")
             {
-                linkFiles(filename1, filename2);
+                Linker linker;
+                linker.linkFiles(filename1, filename2);
                 return 0;
             }
             else

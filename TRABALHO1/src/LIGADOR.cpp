@@ -1,46 +1,17 @@
+#include "LIGADOR.hpp"
 
+Linker::Linker() : correctionFactor(0) {}
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <map>
-
-using UsageTable = std::map<std::string, std::vector<int>>;
-using DefinitionTable = std::map<std::string, std::vector<int>>;
-using RelocationTable = std::vector<int>;
-using Code = std::vector<int>;
-
-UsageTable usageTable1;
-DefinitionTable definitionTable1;
-RelocationTable relocationTable1;
-Code code1;
-
-UsageTable usageTable2;
-DefinitionTable definitionTable2;
-RelocationTable relocationTable2;
-Code code2;
-
-int correctionFactor;
-
-void applyCorrectionFactor(Code &c, RelocationTable &rt);
-void generateTables(std::ifstream &file, UsageTable &ut, DefinitionTable &dt, RelocationTable &rt, Code &c);
-
-void linkFiles(std::string file1, std::string file2)
+void Linker::linkFiles(const std::string &file1, const std::string &file2)
 {
-    std::ofstream outputStream(file1.substr(0, file1.size() - 2) + "_linked" + ".obj");
-
-    // 10 9 1 20 11 30 7 10 14 5 13 19 13 5 13 19 5 8 10
-    // 10 9 1 20 11 30 7 10 14 5 13 19 13 5 13 19 5 8 10
+    std::ofstream outputStream(file1.substr(0, file1.size() - 2) + "_linked.obj");
 
     std::ifstream file1Stream(file1);
     std::ifstream file2Stream(file2);
 
-    std::string section;
-
     if (!file1Stream.is_open() || !file2Stream.is_open() || !outputStream.is_open())
     {
-        std::cout << "Erro ao abrir os arquivos" << std::endl;
+        std::cerr << "Erro ao abrir os arquivos" << std::endl;
         return;
     }
 
@@ -87,7 +58,7 @@ void linkFiles(std::string file1, std::string file2)
     outputStream.close();
 }
 
-void generateTables(std::ifstream &file, UsageTable &ut, DefinitionTable &dt, RelocationTable &rt, Code &c)
+void Linker::generateTables(std::ifstream &file, UsageTable &ut, DefinitionTable &dt, RelocationTable &rt, Code &c)
 {
     std::string line;
     std::string section;
@@ -108,13 +79,13 @@ void generateTables(std::ifstream &file, UsageTable &ut, DefinitionTable &dt, Re
             section = "REAL";
             continue;
         }
-        else if (section == "REAL" && line == "" || line.empty() || line == " ")
+        else if (section == "REAL" && (line.empty() || line == " "))
         {
             section = "CODE";
             continue;
         }
 
-        else if (line.empty())
+        if (line.empty())
             continue;
 
         if (section == "USO")
@@ -158,14 +129,12 @@ void generateTables(std::ifstream &file, UsageTable &ut, DefinitionTable &dt, Re
         }
     }
 }
-void applyCorrectionFactor(Code &c, RelocationTable &rt)
+
+void Linker::applyCorrectionFactor(Code &c, RelocationTable &rt)
 {
-    int count;
     for (int i = 0; i < c.size(); i++)
     {
         if (rt[i] == 1)
             c[i] += correctionFactor;
     }
-
-    count = 0;
 }
