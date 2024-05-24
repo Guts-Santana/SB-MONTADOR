@@ -7,7 +7,7 @@ Assembler::Assembler::Assembler()
 {
 }
 
-void Assembler::Assembler::ReadFile(const std::string &filename)
+void Assembler::ReadFile(const std::string &filename)
 {
     std::string line;
     std::string word;
@@ -85,7 +85,7 @@ void Assembler::Assembler::ReadFile(const std::string &filename)
     }
 }
 
-void Assembler::Assembler::UpdateUsageTable(const std::vector<std::string> &line)
+void Assembler::UpdateUsageTable(const std::vector<std::string> &line)
 {
     if (line[0].back() == ':')
     {
@@ -119,7 +119,7 @@ void Assembler::Assembler::UpdateUsageTable(const std::vector<std::string> &line
     }
 }
 
-void Assembler::Assembler::WriteFile(const std::string &filename)
+void Assembler::WriteFile(const std::string &filename)
 {
     std::string output_filename;
     if (should_be_linked)
@@ -178,7 +178,7 @@ void Assembler::Assembler::WriteFile(const std::string &filename)
     file.close();
 }
 
-std::vector<std::string> Assembler::Assembler::FindLabel(std::vector<std::string> line)
+std::vector<std::string> Assembler::FindLabel(std::vector<std::string> line)
 {
     if (line[0].back() == ':')
     {
@@ -214,7 +214,7 @@ std::vector<std::string> Assembler::Assembler::FindLabel(std::vector<std::string
     return line;
 }
 
-void Assembler::Assembler::WriteProgram(const std::vector<std::string> &line, bool shouldBeLinked)
+void Assembler::WriteProgram(const std::vector<std::string> &line, bool shouldBeLinked)
 {
     int position;
     for (size_t i = 0; i < line.size(); ++i)
@@ -297,7 +297,7 @@ void Assembler::Assembler::WriteProgram(const std::vector<std::string> &line, bo
     }
 }
 
-void Assembler::Assembler::WriteSymbols(const std::vector<std::string> &line)
+void Assembler::WriteSymbols(const std::vector<std::string> &line)
 {
     std::string label = line[0];
     label.pop_back();
@@ -334,7 +334,7 @@ void Assembler::Assembler::WriteSymbols(const std::vector<std::string> &line)
     }
 }
 
-std::vector<std::string> Assembler::Assembler::ProcessCopyInstruction(std::vector<std::string> line)
+std::vector<std::string> Assembler::ProcessCopyInstruction(std::vector<std::string> line)
 {
     std::stringstream ss(line[1]);
     std::string first_symbol, second_symbol;
