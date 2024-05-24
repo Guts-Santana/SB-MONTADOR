@@ -28,10 +28,11 @@ private:
     std::vector<std::string> opcode_values;
     std::vector<std::string> undefined_labels;
     std::unordered_map<std::string, std::vector<int>> usage_table;
-    std::unordered_map<std::string, std::vector<int>> definition_table;
+    std::unordered_map<std::string, int> definition_table;
     std::vector<int> relocation_table;
 
-    void UpdateUsageTable(const std::vector<std::string> &line);
+    void UpdateDefinitionTable(std::string label, int value);
+    void ParseDefinitionTable(const std::vector<std::string> &line);
     std::vector<std::string> FindLabel(std::vector<std::string> line);
     void WriteProgram(const std::vector<std::string> &line, bool shouldBeLinked = false);
     void WriteSymbols(const std::vector<std::string> &line);

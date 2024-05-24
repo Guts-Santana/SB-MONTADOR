@@ -28,11 +28,11 @@ void Linker::linkFiles(const std::string &file1, const std::string &file2)
         {
             if (relocationTable1[v - 1] == 1)
             {
-                code1[v - 1] = definitionTable2[key][0] + correctionFactor;
+                code1[v - 1] = definitionTable2[key] + correctionFactor;
             }
             else
             {
-                code1[v - 1] = definitionTable2[key][0];
+                code1[v - 1] = definitionTable2[key];
             }
         }
     }
@@ -41,7 +41,7 @@ void Linker::linkFiles(const std::string &file1, const std::string &file2)
     {
         for (auto &v : value)
         {
-            code2[v - 1] = definitionTable1[key][0];
+            code2[v - 1] = definitionTable1[key];
         }
     }
 
@@ -104,7 +104,7 @@ void Linker::generateTables(std::ifstream &file, UsageTable &ut, DefinitionTable
             std::string label;
             int value;
             iss >> label >> value;
-            dt[label].push_back(static_cast<int>(value));
+            dt[label] = static_cast<int>(value);
         }
         else if (section == "REAL")
         {

@@ -9,7 +9,7 @@
 #include <string>
 
 using UsageTable = std::map<std::string, std::vector<int>>;
-using DefinitionTable = std::map<std::string, std::vector<int>>;
+using DefinitionTable = std::map<std::string, int>;
 using RelocationTable = std::vector<int>;
 using Code = std::vector<int>;
 

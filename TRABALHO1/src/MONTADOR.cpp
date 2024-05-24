@@ -30,13 +30,13 @@ void Assembler::ReadFile(const std::string &filename)
             parsed_line.push_back(word);
         }
 
-        UpdateUsageTable(parsed_line);
+        ParseDefinitionTable(parsed_line);
 
         parsed_line = FindLabel(parsed_line);
 
         if (parsed_line[0] == "BEGIN")
         {
-            definition_table[labels.back()].push_back(0);
+            UpdateDefinitionTable(labels.back(), 0);
             should_be_linked = true;
             line_counter++;
             continue;
@@ -58,7 +58,7 @@ void Assembler::ReadFile(const std::string &filename)
         if (parsed_line[0] == "PUBLIC")
         {
             line_counter++;
-            definition_table[parsed_line[1]].push_back(-1);
+            UpdateDefinitionTable(parsed_line[1], -1);
             continue;
         }
 
@@ -85,7 +85,19 @@ void Assembler::ReadFile(const std::string &filename)
     }
 }
 
-void Assembler::UpdateUsageTable(const std::vector<std::string> &line)
+void Assembler::UpdateDefinitionTable(std::string label, int value)
+{
+    if (definition_table.find(label) != definition_table.end() && definition_table[label] != -1)
+    {
+        throw std::runtime_error("Key " + label + " already exists in definition table");
+    }
+    else
+    {
+        definition_table[label] = value;
+    }
+}
+
+void Assembler::ParseDefinitionTable(const std::vector<std::string> &line)
 {
     if (line[0].back() == ':')
     {
@@ -103,17 +115,15 @@ void Assembler::UpdateUsageTable(const std::vector<std::string> &line)
 
             if (temp_line[0] == "CONST")
             {
-                definition_table[temp].clear();
-                definition_table[temp].push_back(std::stoi(temp_line[1]));
+                UpdateDefinitionTable(temp, std::stoi(temp_line[1]));
             }
             else if (temp_line[0] == "SPACE")
             {
-                definition_table[temp].clear();
-                definition_table[temp].push_back(0);
+                UpdateDefinitionTable(temp, 0);
             }
             else
             {
-                definition_table[temp].push_back(PC);
+                UpdateDefinitionTable(temp, PC);
             }
         }
     }
@@ -151,13 +161,8 @@ void Assembler::WriteFile(const std::string &filename)
         file << "\nDEF\n";
         for (const auto &[key, value] : definition_table)
         {
-            for (int v : value)
-            {
-                if (v != -1)
-                {
-                    file << key << " " << v << '\n';
-                }
-            }
+
+            file << key << " " << value << '\n';
         }
 
         file << "\nREAL\n";
