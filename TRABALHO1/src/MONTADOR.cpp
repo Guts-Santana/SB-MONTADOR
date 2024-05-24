@@ -118,18 +118,7 @@ void Assembler::ParseDefinitionTable(const std::vector<std::string> &line)
                 temp_line.erase(temp_line.begin());
             }
 
-            if (temp_line[0] == "CONST")
-            {
-                UpdateDefinitionTable(temp, PC);
-            }
-            else if (temp_line[0] == "SPACE")
-            {
-                UpdateDefinitionTable(temp, PC);
-            }
-            else
-            {
-                UpdateDefinitionTable(temp, PC);
-            }
+            UpdateDefinitionTable(temp, PC);
         }
     }
 }
