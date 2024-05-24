@@ -332,10 +332,10 @@ void Assembler::WriteSymbols(const std::vector<std::string> &line)
         while (program[pos] != "-1")
         {
             int temp = std::stoi(program[pos]);
-            program[pos] = std::to_string(PC + 1);
+            program[pos] = std::to_string(PC);
             pos = temp;
         }
-        program[pos] = std::to_string(PC + 1);
+        program[pos] = std::to_string(PC);
     }
 }
 

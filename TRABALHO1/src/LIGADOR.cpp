@@ -137,6 +137,6 @@ void Linker::applyCorrectionFactor(Code &c, RelocationTable &rt)
     for (int i = 0; i < c.size(); i++)
     {
         if (rt[i] == 1)
-            c[i] += correctionFactor - 1;
+            c[i] += correctionFactor;
     }
 }
