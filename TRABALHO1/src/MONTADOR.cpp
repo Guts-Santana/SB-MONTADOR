@@ -120,11 +120,11 @@ void Assembler::ParseDefinitionTable(const std::vector<std::string> &line)
 
             if (temp_line[0] == "CONST")
             {
-                UpdateDefinitionTable(temp, std::stoi(temp_line[1]));
+                UpdateDefinitionTable(temp, PC);
             }
             else if (temp_line[0] == "SPACE")
             {
-                UpdateDefinitionTable(temp, 0);
+                UpdateDefinitionTable(temp, PC);
             }
             else
             {
