@@ -139,29 +139,25 @@ void Assembler::Assembler::WriteFile(const std::string &filename)
         file << "USO\n";
         for (const auto &[key, value] : usage_table)
         {
-            file << key << " ";
             for (int v : value)
             {
                 if (v != -1)
                 {
-                    file << v << " ";
+                    file << key << " " << v << '\n';
                 }
             }
-            file << '\n';
         }
 
         file << "\nDEF\n";
         for (const auto &[key, value] : definition_table)
         {
-            file << key << " ";
             for (int v : value)
             {
                 if (v != -1)
                 {
-                    file << v << " ";
+                    file << key << " " << v << '\n';
                 }
             }
-            file << '\n';
         }
 
         file << "\nREAL\n";
