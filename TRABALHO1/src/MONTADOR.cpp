@@ -91,7 +91,11 @@ void Assembler::UpdateDefinitionTable(std::string label, int value)
     if (definition_table.find(label) != definition_table.end() && definition_table[label] != -1)
     {
         if (value != -1)
+        {
+
             std::cerr << "Key " + label + " already exists in definition table";
+            throw std::invalid_argument("Semantic Error: LABEL REDEFINED");
+        }
     }
     else
     {
@@ -179,7 +183,6 @@ void Assembler::WriteFile(const std::string &filename)
 
     for (const std::string &i : program)
     {
-        std::cout << i << ' ';
         file << i << ' ';
     }
     file.close();

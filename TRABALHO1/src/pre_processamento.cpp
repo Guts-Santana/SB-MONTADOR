@@ -35,7 +35,6 @@ void LEITURA(std::string filename)
 				break;
 			word = ALTERA_EQUS(word);
 			linha.push_back(word);
-			// std::cout << word << std::endl;
 		}
 		if (EIF(linha))
 		{
@@ -50,12 +49,10 @@ void LEITURA(std::string filename)
 		{
 			for (int i = 0; i < (int)linha.size(); i++)
 			{
-				std::cout << linha[i] << " ";
 				arquivo << linha[i] << " ";
 			}
 			if (linha.size() != 0)
 			{
-				std::cout << "\n";
 				arquivo << "\n";
 			}
 		}
