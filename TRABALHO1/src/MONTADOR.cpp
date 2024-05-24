@@ -36,7 +36,7 @@ void Assembler::ReadFile(const std::string &filename)
 
         if (parsed_line[0] == "BEGIN")
         {
-            UpdateDefinitionTable(parsed_line[1], 0);
+            UpdateDefinitionTable(labels.back(), 0);
             should_be_linked = true;
             line_counter++;
             continue;
@@ -87,7 +87,6 @@ void Assembler::ReadFile(const std::string &filename)
 
 void Assembler::UpdateDefinitionTable(std::string label, int value)
 {
-    std::cout << label << ' ' << value << std::endl;
 
     if (definition_table.find(label) != definition_table.end() && definition_table[label] != -1)
     {
