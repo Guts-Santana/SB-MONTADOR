@@ -58,7 +58,7 @@ void Assembler::ReadFile(const std::string &filename)
         if (parsed_line[0] == "PUBLIC")
         {
             line_counter++;
-            UpdateDefinitionTable(parsed_line[1], PC);
+            UpdateDefinitionTable(parsed_line[1], -1);
             continue;
         }
 
