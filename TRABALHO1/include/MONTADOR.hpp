@@ -31,7 +31,7 @@ private:
     std::unordered_map<std::string, int> definition_table;
     std::vector<int> relocation_table;
 
-    void UpdateDefinitionTable(std::string label, int value);
+    void UpdateDefinitionTable(std::string label, int value, bool isSymbol = false);
     void ParseDefinitionTable(const std::vector<std::string> &line);
     std::vector<std::string> FindLabel(std::vector<std::string> line);
     void WriteProgram(const std::vector<std::string> &line, bool shouldBeLinked = false);
