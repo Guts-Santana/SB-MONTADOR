@@ -26,9 +26,11 @@ namespace Assembler
         std::vector<std::string> program;
         std::vector<std::string> symbols;
         std::vector<std::string> symbol_addresses;
+		std::vector<bool> symbols_notD;
         std::vector<std::string> opcodes;
         std::vector<std::string> opcode_values;
         std::vector<std::string> undefined_labels;
+		std::vector<std::string> label_notD;
         std::unordered_map<std::string, std::vector<int>> usage_table;
         std::unordered_map<std::string, std::vector<int>> definition_table;
         std::vector<int> relocation_table;
@@ -38,5 +40,7 @@ namespace Assembler
         void WriteProgram(const std::vector<std::string> &line, bool shouldBeLinked = false);
         void WriteSymbols(const std::vector<std::string> &line);
         std::vector<std::string> ProcessCopyInstruction(std::vector<std::string> line);
+
+		void ErrorNotDefined();
     };
 }
