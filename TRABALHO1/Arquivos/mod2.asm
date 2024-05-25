@@ -1,0 +1,6 @@
+MOD2: BEGIN
+VAL: EXTERN
+PUBLIC MOD_B
+OUTPUT VAL ; VAL é usado apenas no mod2
+STOP
+END

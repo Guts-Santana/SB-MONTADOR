@@ -1,0 +1,6 @@
+MOD1: BEGIN
+MOD2: EXTERN
+PUBLIC VAL
+JMP MOD2
+VAL: CONST 5 ; VAL é definido mas não é usado
+END
