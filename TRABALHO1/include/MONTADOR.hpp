@@ -18,6 +18,7 @@ public:
 
 private:
     int PC;
+    std::string modname;
     bool should_be_linked;
     std::vector<std::string> labels;
     std::vector<std::string> label_addresses;

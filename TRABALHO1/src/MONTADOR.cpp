@@ -36,7 +36,7 @@ void Assembler::ReadFile(const std::string &filename)
 
         if (parsed_line[0] == "BEGIN")
         {
-            UpdateDefinitionTable(labels.back(), 0);
+            modname = labels.back();
             should_be_linked = true;
             line_counter++;
             continue;
@@ -58,8 +58,15 @@ void Assembler::ReadFile(const std::string &filename)
         if (parsed_line[0] == "PUBLIC")
         {
             line_counter++;
-            UpdateDefinitionTable(parsed_line[1], -1);
             public_symbols.push_back(parsed_line[1]);
+            if (parsed_line[1] == modname)
+            {
+                UpdateDefinitionTable(parsed_line[1], 0);
+            }
+            else
+            {
+                UpdateDefinitionTable(parsed_line[1], -1);
+            }
             continue;
         }
 
@@ -322,10 +329,6 @@ void Assembler::WriteSymbols(const std::vector<std::string> &line)
             program.push_back("0");
             if (is_public && !isSymbol)
                 return;
-        }
-        else
-        {
-            throw std::invalid_argument("Error");
         }
         int position = std::distance(symbols.begin(), symbol_it);
         int pos = std::stoi(symbol_addresses[position]);
