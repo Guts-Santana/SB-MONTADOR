@@ -17,8 +17,7 @@ void Assembler::Assembler::ReadFile(const std::string &filename)
     std::ifstream file(filename);
     if (!file.is_open())
     {
-        std::cerr << "PRE file not found" << std::endl;
-        return;
+        throw std::invalid_argument("PRE file not founded");
     }
 
     while (getline(file, line))
