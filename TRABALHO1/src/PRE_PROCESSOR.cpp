@@ -13,7 +13,7 @@ void PRE_PROCESSING::ReadFile(std::string filename)
 	std::ifstream file(filename);
 	if (!file.is_open())
 	{
-		std::cerr << "Assembly file not founded" << std::endl;
+		throw std::invalid_argument("Assembly file not founded");
 	}
 	filename.pop_back();
 	filename.pop_back();

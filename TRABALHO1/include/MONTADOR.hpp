@@ -42,5 +42,7 @@ namespace Assembler
         std::vector<std::string> ProcessCopyInstruction(std::vector<std::string> line);
 
 		void ErrorNotDefined();
+		void LexicERROR(std::string word);
+		void InstructionConfig(std::vector<std::string> line);
     };
 }

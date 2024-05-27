@@ -13,6 +13,7 @@ void Assembler::Assembler::ReadFile(const std::string &filename)
     std::string word;
     std::vector<std::string> parsed_line;
 
+
     std::ifstream file(filename);
     if (!file.is_open())
     {
@@ -188,6 +189,7 @@ std::vector<std::string> Assembler::Assembler::FindLabel(std::vector<std::string
     {
         std::string label = line[0];
         label.pop_back();
+		LexicERROR(label);
         auto it = std::find(labels.begin(), labels.end(), label);
         if (it != labels.end())
         {
@@ -247,13 +249,21 @@ void Assembler::Assembler::WriteProgram(const std::vector<std::string> &line, bo
         auto opcode_it = std::find(opcodes.begin(), opcodes.end(), line[i]);
         if (opcode_it != opcodes.end())
         {
-            if (shouldBeLinked)
-            {
-                relocation_table.push_back(0);
-            }
-            position = std::distance(opcodes.begin(), opcode_it);
-            program.push_back(opcode_values[position]);
-            continue;
+			if (i == 0)
+			{
+				InstructionConfig(line);
+            	if (shouldBeLinked)
+            	{
+            	    relocation_table.push_back(0);
+            	}
+            	position = std::distance(opcodes.begin(), opcode_it);
+            	program.push_back(opcode_values[position]);
+            	continue;
+			}
+			else
+			{
+				throw std::invalid_argument("Syntax Error");
+			}
         }
 
         auto label_it = std::find(labels.begin(), labels.end(), line[i]);
@@ -262,6 +272,7 @@ void Assembler::Assembler::WriteProgram(const std::vector<std::string> &line, bo
             if (shouldBeLinked)
             {
                 relocation_table.push_back(1);
+				LexicERROR(line[i]);
             }
             position = std::distance(labels.begin(), label_it);
             program.push_back(label_addresses[position]);
@@ -291,6 +302,7 @@ void Assembler::Assembler::WriteProgram(const std::vector<std::string> &line, bo
         {
             if (line[0] != "JMP" && line[0] != "JMPP" && line[0] != "JMPZ" && line[0] != "JMPN")
             {
+				LexicERROR(line[i]);
                 if (shouldBeLinked)
                 {
                     relocation_table.push_back(1);
@@ -302,6 +314,7 @@ void Assembler::Assembler::WriteProgram(const std::vector<std::string> &line, bo
             }
             else
             {
+				LexicERROR(line[i]);
                 label_notD.push_back(std::to_string(PC + static_cast<int>(i)));
                 undefined_labels.push_back(line[i]);
                 program.push_back("-1");
@@ -312,9 +325,10 @@ void Assembler::Assembler::WriteProgram(const std::vector<std::string> &line, bo
 
 void Assembler::Assembler::WriteSymbols(const std::vector<std::string> &line)
 {
-    std::string label = line[0];
-    label.pop_back();
-    auto symbol_it = std::find(symbols.begin(), symbols.end(), label);
+    std::string sym = line[0];
+    sym.pop_back();
+	LexicERROR(sym);
+    auto symbol_it = std::find(symbols.begin(), symbols.end(), sym);
     if (symbol_it != symbols.end())
     {
         int position = std::distance(symbols.begin(), symbol_it);
@@ -387,5 +401,52 @@ void Assembler::Assembler::ErrorNotDefined(){
 			throw std::invalid_argument(ss.str());
 		}
 		
+	}
+}
+
+void Assembler::Assembler::LexicERROR(std::string word)
+{
+	if (word.size() < 2)
+	{
+		throw std::invalid_argument("Lexic Error");
+	}
+	if (isdigit(word[0]))
+	{
+		throw std::invalid_argument("Lexic Error");
+	}
+	for (int i = 0; i < word.size(); i++)
+	{
+		if(!isalnum(word[i]))
+		{
+			if (word[i] != '_')
+			{
+				throw std::invalid_argument("Lexic Error");
+			}
+		}
+	}	
+}
+
+void Assembler::Assembler::InstructionConfig(std::vector<std::string> line)
+{
+	if (line[0] != "COPY" && line[0] != "STOP")
+	{
+		if (line.size() != 2)
+		{
+			throw std::invalid_argument("Syntax Error");
+		}
+	}
+	else if (line[0] == "COPY")
+	{
+		if (line.size() != 3)
+		{
+			throw std::invalid_argument("Syntax Error");
+		}
+	}
+	else
+	{
+		if (line.size() != 1)
+		{
+			throw std::invalid_argument("Syntax Error");
+		}
 	}
 }
