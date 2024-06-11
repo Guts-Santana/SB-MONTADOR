@@ -33,6 +33,10 @@ void Assembler::ReadFile(const std::string &filename)
         ParseDefinitionTable(parsed_line);
 
         parsed_line = FindLabel(parsed_line);
+        if (parsed_line.size() != 0)
+        {
+            FindLabel(parsed_line);
+        }
 
         if (parsed_line[0] == "BEGIN")
         {
@@ -116,6 +120,8 @@ void Assembler::ParseDefinitionTable(const std::vector<std::string> &line)
         std::string temp = line[0];
         temp.pop_back();
 
+        // ! CHECK IF LOGIC IS CORRECT
+
         auto symbol_it = std::find(symbols.begin(), symbols.end(), temp);
         auto public_it = std::find(public_symbols.begin(), public_symbols.end(), temp);
 
@@ -129,6 +135,8 @@ void Assembler::ParseDefinitionTable(const std::vector<std::string> &line)
             }
             symbols_notD[position] = false;
         }
+
+        // ! ------------------------------------------------------------------------
 
         if (definition_table.find(temp) != definition_table.end())
         {
@@ -199,6 +207,7 @@ void Assembler::WriteFile(const std::string &filename)
 
 std::vector<std::string> Assembler::FindLabel(std::vector<std::string> line)
 {
+    std::cout << line[0] << " " << second_label << std::endl;
     if (line[0].back() == ':')
     {
         if (second_label)
@@ -216,8 +225,6 @@ std::vector<std::string> Assembler::FindLabel(std::vector<std::string> line)
         }
         else if (line.size() != 1)
         {
-            if (line[1] == "STOP" || line[1] == "EXTERN" || line[1] == "BEGIN" || line[1] == "END")
-                second_label = false;
             if (line[1] == "SPACE" || line[1] == "CONST")
             {
                 second_label = false;
