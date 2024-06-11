@@ -9,6 +9,7 @@ Yan Tavares - 202014323
 
 - [Uso](#Uso)
 - [Observações](#Observações)
+- [Simulação](#Simulando-a-execução-do-arquivo-obj)
 - [Estrutura do projeto](#Estrutura-do-projeto)
 - [Contato](#Contato)
 
@@ -20,40 +21,42 @@ Yan Tavares - 202014323
 make
 ```
 
-Isso irá criar o arquivo executável `montador` na pasta `bin`. Com ele, é possível montar e ligar arquivos `.asm` e `.obj`:
+Isso irá criar o arquivo executável `montador`. Com ele, é possível montar e ligar arquivos `.asm` e `.obj`:
 
 1. Para visualizar todas as opções disponíveis, execute:
 
 ```bash
-./bin/montador --help
+./montador --help
 ```
 
 ou
 
 ```bash
-./bin/montador -h
+./montador -h
 ```
 
 2. Para **apenas** pré-processar um arquivo `.asm` e gerar um arquivo `.pre`, execute:
 
 ```bash
-./bin/montador -p <arquivo.asm>
+./montador -p <arquivo.asm>
 
 ```
 
 3. Para montar um arquivo `.asm` e gerar um arquivo `.obj` (ou `.e`, no caso de arquivos ligáveis), execute:
 
 ```bash
-./bin/montador -o <arquivo.asm>
+./montador -o <arquivo.asm>
 ```
 
 4. Para ligar dois arquivos `.e` e gerar um arquivo `.obj` resultante, execute:
 
 ```bash
-./bin/montador -l <arquivo1.e> <arquivo2.e>
+./montador -l <arquivo1.e> <arquivo2.e>
 ```
 
 O arquivo `obj` terá o nome do primeiro arquivo passado como argumento + `_linked.obj`
+
+Obs.: Você também pode utilizar o arquivo `montador` pré compilado no diretório `bin/`.
 
 ### Opção 2 - Usando `make` para compilar e executar os arquivos automaticamente:
 
@@ -83,6 +86,14 @@ make clean
 - O montador e ligador foram testados nos ambientes (Ubuntu 20.04, POP_OS 22.04 e WSL no Windows 11).
 - Os arquivos utilizados para teste podem ser encontrados na pasta `Arquivos/`.
 - Diretiva `CONST` aceita números decimais e hexadecimais.
+
+## Simulando a execução do arquivo `.obj`
+
+Para simular o processamento de um arquivo `.obj`, é necessário utilizar o simulador. Para isso, execute:
+
+```bash
+./bin/simulador <arquivo.obj>
+```
 
 ## Estrutura do projeto
 

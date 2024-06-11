@@ -8,7 +8,7 @@ HEADERS = $(wildcard include/*.h)
 OBJS = $(patsubst src/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
 
 # Directories
-BIN_DIR = bin
+BIN_DIR = .
 OBJ_DIR = obj
 
 # Target executable
