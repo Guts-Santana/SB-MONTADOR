@@ -120,5 +120,5 @@ TRABALHO1
 
 Se você quiser entrar em contato, envie um e-mail para qualquer um dos autores:
 
-- [Yan](mailto:yantdo1@gmail.com)
-- [Gustavo](mailto:gutssantana@gmail.com).
+- [yantdo1@gmail.com](mailto:yantdo1@gmail.com)
+- [guts.santana@gmail.com](mailto:guts.santana@gmail.com)
