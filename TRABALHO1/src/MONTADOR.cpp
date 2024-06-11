@@ -1,7 +1,7 @@
 #include "MONTADOR.hpp"
 
 Assembler::Assembler::Assembler()
-    : line_counter(1), PC(0), should_be_linked(false),
+    : line_counter(1), PC(0), should_be_linked(false), second_label(false),
       opcodes{"ADD", "SUB", "MUL", "DIV", "JMP", "JMPN", "JMPP", "JMPZ", "COPY", "LOAD", "STORE", "INPUT", "OUTPUT", "STOP"},
       opcode_values{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"}
 {
@@ -116,6 +116,20 @@ void Assembler::ParseDefinitionTable(const std::vector<std::string> &line)
         std::string temp = line[0];
         temp.pop_back();
 
+        auto symbol_it = std::find(symbols.begin(), symbols.end(), temp);
+        auto public_it = std::find(public_symbols.begin(), public_symbols.end(), temp);
+
+        if (symbol_it != symbols.end() && public_it != public_symbols.end())
+        {
+            int position = std::distance(symbols.begin(), symbol_it);
+
+            if (!symbols_notD[position])
+            {
+                throw std::invalid_argument("Semantic Error: Symbol redefined");
+            }
+            symbols_notD[position] = false;
+        }
+
         if (definition_table.find(temp) != definition_table.end())
         {
             std::vector<std::string> temp_line = line;
@@ -183,11 +197,11 @@ void Assembler::WriteFile(const std::string &filename)
     file.close();
 }
 
-std::vector<std::string> Assembler::Assembler::FindLabel(std::vector<std::string> line)
+std::vector<std::string> Assembler::FindLabel(std::vector<std::string> line)
 {
     if (line[0].back() == ':')
     {
-        if (second_label && line[1].back() == ':')
+        if (second_label)
         {
             throw std::invalid_argument("Two labels");
         }
@@ -202,6 +216,8 @@ std::vector<std::string> Assembler::Assembler::FindLabel(std::vector<std::string
         }
         else if (line.size() != 1)
         {
+            if (line[1] == "STOP" || line[1] == "EXTERN" || line[1] == "BEGIN" || line[1] == "END")
+                second_label = false;
             if (line[1] == "SPACE" || line[1] == "CONST")
             {
                 second_label = false;
@@ -432,7 +448,6 @@ void Assembler::Assembler::ErrorNotDefined()
 
 void Assembler::Assembler::LexicERROR(std::string word)
 {
-
     if (isdigit(word[0]))
     {
         throw std::invalid_argument("Lexic Error");

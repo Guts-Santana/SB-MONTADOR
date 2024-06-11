@@ -1,6 +1,6 @@
 INPUT   N
 LOAD    N
-FAT:   SUB     ONE
+FAT: SUB     ONE
 JMPZ    FIM
 STORE   AUX
 MUL     N
