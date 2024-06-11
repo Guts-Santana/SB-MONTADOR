@@ -1,7 +1,7 @@
 #include "MONTADOR.hpp"
 
 Assembler::Assembler::Assembler()
-    : line_counter(1), PC(0), should_be_linked(false),
+    : line_counter(1), PC(0), should_be_linked(false), second_label(false),
       opcodes{"ADD", "SUB", "MUL", "DIV", "JMP", "JMPN", "JMPP", "JMPZ", "COPY", "LOAD", "STORE", "INPUT", "OUTPUT", "STOP"},
       opcode_values{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"}
 {
@@ -33,7 +33,10 @@ void Assembler::Assembler::ReadFile(const std::string &filename)
         UpdateUsageTable(parsed_line);
 
         parsed_line = FindLabel(parsed_line);
-
+		if (parsed_line.size() != 0)
+		{
+			FindLabel(parsed_line);
+		}
         if (parsed_line[0] == "BEGIN")
         {
             definition_table[labels.back()].push_back(0);
@@ -186,6 +189,11 @@ std::vector<std::string> Assembler::Assembler::FindLabel(std::vector<std::string
 {
     if (line[0].back() == ':')
     {
+		if (second_label)
+		{
+			throw std::invalid_argument("Two labels");
+		}
+		second_label = true;
         std::string label = line[0];
         label.pop_back();
 		LexicERROR(label);
@@ -198,6 +206,7 @@ std::vector<std::string> Assembler::Assembler::FindLabel(std::vector<std::string
 		{
 			if (line[1] == "SPACE" || line[1] == "CONST")
         	{
+				second_label = false;
 				return line;
         	}
 			else
@@ -225,6 +234,9 @@ std::vector<std::string> Assembler::Assembler::FindLabel(std::vector<std::string
 			}
         }
     }
+	else{
+		second_label = false;
+	}
     return line;
 }
 
@@ -271,8 +283,9 @@ void Assembler::Assembler::WriteProgram(const std::vector<std::string> &line, bo
             if (shouldBeLinked)
             {
                 relocation_table.push_back(1);
-				LexicERROR(line[i]);
+				
             }
+			LexicERROR(line[i]);
             position = std::distance(labels.begin(), label_it);
             program.push_back(label_addresses[position]);
             continue;
@@ -375,7 +388,9 @@ std::vector<std::string> Assembler::Assembler::ProcessCopyInstruction(std::vecto
     std::getline(ss, first_symbol, ',');
     std::getline(ss, second_symbol, ',');
     line[1] = first_symbol;
+	LexicERROR(line[1]);
     line.push_back(second_symbol);
+	LexicERROR(line[2]);
     return line;
 }
 
