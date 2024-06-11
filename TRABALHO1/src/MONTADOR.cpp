@@ -120,24 +120,6 @@ void Assembler::ParseDefinitionTable(const std::vector<std::string> &line)
         std::string temp = line[0];
         temp.pop_back();
 
-        // ! CHECK IF LOGIC IS CORRECT
-
-        auto symbol_it = std::find(symbols.begin(), symbols.end(), temp);
-        auto public_it = std::find(public_symbols.begin(), public_symbols.end(), temp);
-
-        if (symbol_it != symbols.end() && public_it != public_symbols.end())
-        {
-            int position = std::distance(symbols.begin(), symbol_it);
-
-            if (!symbols_notD[position])
-            {
-                throw std::invalid_argument("Semantic Error: Symbol redefined");
-            }
-            symbols_notD[position] = false;
-        }
-
-        // ! ------------------------------------------------------------------------
-
         if (definition_table.find(temp) != definition_table.end())
         {
             std::vector<std::string> temp_line = line;
@@ -207,7 +189,6 @@ void Assembler::WriteFile(const std::string &filename)
 
 std::vector<std::string> Assembler::FindLabel(std::vector<std::string> line)
 {
-    std::cout << line[0] << " " << second_label << std::endl;
     if (line[0].back() == ':')
     {
         if (second_label)
@@ -445,9 +426,20 @@ void Assembler::Assembler::ErrorNotDefined()
     }
     for (i = 0; i < symbols_notD.size(); i++)
     {
+        if (std::find(public_symbols.begin(), public_symbols.end(), symbols[i]) != public_symbols.end())
+            continue;
+
         if (symbols_notD[i])
         {
             ss << "Semantic Error: Symbol " << symbols[i] << " not Defined";
+            throw std::invalid_argument(ss.str());
+        }
+    }
+    for (i = 0; i < public_symbols.size(); i++)
+    {
+        if (definition_table[public_symbols[i]] == -1)
+        {
+            ss << "Semantic Error: Public Symbol " << public_symbols[i] << " not Defined";
             throw std::invalid_argument(ss.str());
         }
     }
