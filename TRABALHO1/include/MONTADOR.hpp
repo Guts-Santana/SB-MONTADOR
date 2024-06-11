@@ -26,9 +26,12 @@ private:
     std::vector<std::string> public_symbols;
     std::vector<std::string> symbols;
     std::vector<std::string> symbol_addresses;
+    std::vector<bool> symbols_notD;
     std::vector<std::string> opcodes;
     std::vector<std::string> opcode_values;
     std::vector<std::string> undefined_labels;
+    std::vector<std::string> label_notD;
+    bool second_label;
     std::unordered_map<std::string, std::vector<int>> usage_table;
     std::unordered_map<std::string, int> definition_table;
     std::vector<int> relocation_table;
@@ -39,4 +42,8 @@ private:
     void WriteProgram(const std::vector<std::string> &line, bool shouldBeLinked = false);
     void WriteSymbols(const std::vector<std::string> &line);
     std::vector<std::string> ProcessCopyInstruction(std::vector<std::string> line);
+
+    void ErrorNotDefined();
+    void LexicERROR(std::string word);
+    void InstructionConfig(std::vector<std::string> line);
 };
