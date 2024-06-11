@@ -2,10 +2,17 @@
 
 ## Autores
 
+Gustavo Santana Lima - 211038235
 Yan Tavares - 202014323
-Gustavo Lima
 
-## Como compilar e executar o montador e ligador
+## Índice
+
+- [Uso](#Uso)
+- [Observações](#Observações)
+- [Estrutura do projeto](#Estrutura-do-projeto)
+- [Contato](#Contato)
+
+## Uso
 
 ### Opção 1 - Usando `make` para compilar os arquivos e executar manualmente:
 
@@ -108,3 +115,10 @@ TRABALHO1
 │ │ ...
 │
 ```
+
+## Contato
+
+Se você quiser entrar em contato, envie um e-mail para qualquer um dos autores:
+
+- [Yan](mailto:yantdo1@gmail.com)
+- [Gustavo](mailto:gutssantana@gmail.com).
