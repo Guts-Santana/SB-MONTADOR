@@ -366,9 +366,18 @@ void Assembler::WriteSymbols(const std::vector<std::string> &line)
         {
             if (line.size() != 3)
             {
-                throw std::invalid_argument("Syntax Error");
+                throw std::invalid_argument("Syntax Error: CONST must have a value");
             }
-            program.push_back(line[2]);
+            if (is_hex(line[2]))
+            {
+                program.push_back(parse_hex_to_dec(line[2]));
+            }
+            else
+            {
+
+                program.push_back(line[2]);
+            }
+
             if (is_public && !isSymbol)
                 return;
         }
@@ -376,7 +385,7 @@ void Assembler::WriteSymbols(const std::vector<std::string> &line)
         {
             if (line.size() != 2)
             {
-                throw std::invalid_argument("Syntax Error");
+                throw std::invalid_argument("Syntax Error: SPACE must not have a value");
             }
             program.push_back("0");
             if (is_public && !isSymbol)
@@ -486,4 +495,42 @@ void Assembler::Assembler::InstructionConfig(std::vector<std::string> line)
             throw std::invalid_argument("Syntax Error");
         }
     }
+}
+
+// --------------------- AUX FUNCTIONS --------------------- //
+
+bool Assembler::is_hex(std::string num)
+{
+    if (num.substr(0, 2) == "0x" || num.substr(0, 2) == "0X")
+    {
+        for (int i = 2; i < num.size(); i++)
+        {
+            if (!isxdigit(num[i]))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+std::string Assembler::parse_hex_to_dec(std::string num)
+{
+    std::string hex_num = num.substr(2);
+
+    unsigned int decimal_num;
+    std::stringstream ss;
+    ss << std::hex << hex_num;
+    ss >> decimal_num;
+
+    if (ss.fail())
+    {
+        throw std::invalid_argument("Invalid hexadecimal number");
+    }
+
+    std::stringstream result;
+    result << decimal_num;
+
+    return result.str();
 }

@@ -35,6 +35,8 @@ private:
     std::unordered_map<std::string, std::vector<int>> usage_table;
     std::unordered_map<std::string, int> definition_table;
     std::vector<int> relocation_table;
+    bool is_hex(std::string num);
+    std::string parse_hex_to_dec(std::string num);
 
     void UpdateDefinitionTable(std::string label, int value);
     void ParseDefinitionTable(const std::vector<std::string> &line);
