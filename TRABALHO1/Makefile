@@ -8,7 +8,7 @@ HEADERS = $(wildcard include/*.h)
 OBJS = $(patsubst src/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
 
 # Directories
-BIN_DIR = .
+BIN_DIR = bin
 OBJ_DIR = obj
 
 # Target executable
@@ -35,7 +35,7 @@ as: $(TARGET)
 	./$(TARGET) -o $(basename $(file)).pre
 
 # Link two files after preprocessing
-link: $(TARGET)
+ld:  $(TARGET)
 	./$(TARGET) -p $(file1)
 	./$(TARGET) -o $(basename $(file1)).pre
 	./$(TARGET) -p $(file2)

@@ -1,6 +1,6 @@
 #include "MONTADOR.hpp"
 #include "LIGADOR.hpp"
-#include "PRE_PROCESSOR.hpp"
+#include "PRE_PROCESSADOR.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -65,7 +65,6 @@ int main(int argc, char *argv[])
             {
                 PRE_PROCESSING PRE_PROCESSING;
                 PRE_PROCESSING.ReadFile(filename);
-                return 0;
                 return 0;
             }
             else
