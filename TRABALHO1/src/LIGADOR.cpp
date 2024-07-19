@@ -1,115 +1,142 @@
 #include "LIGADOR.hpp"
 
-Module Linker::readModule(const std::string &filename)
-{
-    std::ifstream file(filename);
-    std::string line;
-    Module module;
-    std::string section;
+Linker::Linker() : correctionFactor(0) {}
 
+void Linker::linkFiles(const std::string &file1, const std::string &file2)
+{
+    std::ofstream outputStream(file1.substr(0, file1.size() - 2) + "_linked.obj");
+
+    std::ifstream file1Stream(file1);
+    std::ifstream file2Stream(file2);
+
+    if (!file1Stream.is_open() || !file2Stream.is_open() || !outputStream.is_open())
+    {
+        std::cerr << "Erro ao abrir os arquivos" << std::endl;
+        return;
+    }
+
+    generateTables(file1Stream, usageTable1, definitionTable1, relocationTable1, code1);
+    generateTables(file2Stream, usageTable2, definitionTable2, relocationTable2, code2);
+
+    correctionFactor = code1.size();
+
+    applyCorrectionFactor(code2, relocationTable2);
+
+    for (auto &[key, value] : usageTable1)
+    {
+        for (auto &v : value)
+        {
+            if (relocationTable1[v - 1] == 1)
+            {
+                code1[v - 1] = definitionTable2[key] + correctionFactor;
+            }
+            else
+            {
+                code1[v - 1] = definitionTable2[key];
+            }
+        }
+    }
+
+    for (auto &[key, value] : usageTable2)
+    {
+        for (auto &v : value)
+        {
+            code2[v - 1] = definitionTable1[key];
+        }
+    }
+
+    for (int i = 0; i < code1.size(); i++)
+    {
+        outputStream << code1[i] << " ";
+    }
+
+    for (int i = 0; i < code2.size(); i++)
+    {
+        outputStream << code2[i] << " ";
+    }
+
+    file1Stream.close();
+    file2Stream.close();
+    outputStream.close();
+}
+
+void Linker::generateTables(std::ifstream &file, UsageTable &ut, DefinitionTable &dt, RelocationTable &rt, Code &c)
+{
+    std::string line;
+    std::string section;
     while (std::getline(file, line))
     {
-        if (line.empty())
-            continue;
-
         if (line == "USO")
         {
-            section = "uso";
+            section = "USO";
+            continue;
         }
         else if (line == "DEF")
         {
-            section = "def";
+            section = "DEF";
+            continue;
         }
         else if (line == "REAL")
         {
-            section = "real";
+            section = "REAL";
+            continue;
         }
-        else if (section == "uso")
+        else if (section == "REAL" && (line.empty() || line == " "))
+        {
+            section = "CODE";
+            continue;
+        }
+
+        if (line.empty())
+            continue;
+
+        if (section == "USO")
         {
             std::istringstream iss(line);
-            std::string symbol;
-            int addr;
-            iss >> symbol;
-            while (iss >> addr)
+            std::string label;
+            int value;
+            iss >> label >> value;
+            ut[label].push_back(static_cast<int>(value));
+        }
+        else if (section == "DEF")
+        {
+            std::istringstream iss(line);
+            std::string label;
+            int value;
+            iss >> label >> value;
+            dt[label] = static_cast<int>(value);
+        }
+        else if (section == "REAL")
+        {
+            for (char ch : line)
             {
-                module.uso[symbol].push_back(addr);
+                if (isdigit(ch))
+                {
+                    rt.push_back(ch - '0');
+                }
             }
         }
-        else if (section == "def")
+        else if (section == "CODE")
         {
+            int value;
             std::istringstream iss(line);
-            std::string symbol;
-            int addr;
-            iss >> symbol >> addr;
-            module.defs[symbol] = addr;
-        }
-        else if (section == "real")
-        {
-            module.real = line;
-            section = "code";
-        }
-        else if (section == "code")
-        {
-            std::istringstream iss(line);
-            int instr;
-            while (iss >> instr)
+            while (iss >> value)
             {
-                module.code.push_back(instr);
+                c.push_back(static_cast<int>(value));
             }
         }
+        else
+        {
+            std::cerr << "Invalid section" << std::endl;
+        }
     }
-
-    file.close();
-    return module;
 }
 
-std::vector<int> Linker::linkModules(Module &modA, Module &modB)
+void Linker::applyCorrectionFactor(Code &c, RelocationTable &rt)
 {
-    int correctionB = modA.code.size();
-
-    std::map<std::string, int> globalDefs = modA.defs;
-    for (const auto &[symbol, addr] : modB.defs)
+    for (int i = 0; i < c.size(); i++)
     {
-        globalDefs[symbol] = addr + correctionB;
+        if (rt[i] == 1)
+            c[i] += correctionFactor;
     }
-
-    for (const auto &[symbol, addrs] : modA.uso)
-    {
-        for (int addr : addrs)
-        {
-            modA.code[addr] += globalDefs[symbol];
-        }
-    }
-
-    for (const auto &[symbol, addrs] : modB.uso)
-    {
-        for (int addr : addrs)
-        {
-            modB.code[addr] += globalDefs[symbol];
-        }
-    }
-
-    for (int &instr : modB.code)
-    {
-        if (instr != 0)
-        {
-            instr += correctionB;
-        }
-    }
-
-    std::vector<int> linkedCode = modA.code;
-    linkedCode.insert(linkedCode.end(), modB.code.begin(), modB.code.end());
-
-    return linkedCode;
-}
-
-void Linker::writeLinkedModule(const std::vector<int> &linkedCode, const std::string &filename)
-{
-    std::ofstream outfile(filename);
-    for (int instr : linkedCode)
-    {
-        outfile << instr << " ";
-    }
-    outfile << std::endl;
-    outfile.close();
 }

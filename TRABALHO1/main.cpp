@@ -1,36 +1,42 @@
 #include "MONTADOR.hpp"
 #include "LIGADOR.hpp"
-#include "PRE_PROCESSOR.hpp"
+#include "PRE_PROCESSADOR.hpp"
 
 int main(int argc, char *argv[])
 {
     try
     {
-        if (argc != 1 && argc != 3 && argc != 4)
+        if (argc != 2 && argc != 3 && argc != 4)
         {
-            std::cerr << "Error opening file. See ./montador -help to see available commands." << std::endl;
+            std::cerr << "Error opening file. See ./montador --help to see available commands." << std::endl;
             return 1;
         }
 
-        if (argc == 1)
+        if (argc == 2)
         {
             std::string flag = argv[1];
-			std::cout << flag;
-            if (flag == "-help")
+            std::cout << flag << std::endl;
+            if (flag == "--help" || flag == "-h")
             {
-                std::cout << "Available commands:\n";
-                std::cout << "./montador -o <filename> -> Assembles the file\n";
-                std::cout << "./montador -p <filename> -> Pre-Processes the file\n";
-                std::cout << "./montador -l <filename1> <filename2> -> Links the files\n";
-                std::cout << "./montador -h -> Shows available commands\n";
-                std::cout << "OR\n";
-                std::cout << "Run make as file=<filename> to pre-process and assemble the file.'\n";
-                std::cout << "Run make link file1=<filename1> file2=<filename2> to pre-process, assemble, and link the files.'\n";
+                std::cout << std::endl;
+                std::cout << "Usage: ./montador [OPTION] [FILENAME]" << std::endl;
+                std::cout << std::endl;
+                std::cout << " > Available commands:" << std::endl;
+                std::cout << std::endl;
+                std::cout << "./montador -o <filename> -> Assembles the file" << std::endl;
+                std::cout << "./montador -p <filename> -> Pre-Processes the file" << std::endl;
+                std::cout << "./montador -l <filename1> <filename2> -> Links the files together" << std::endl;
+                std::cout << "./montador -h -> Shows available commands" << std::endl;
+                std::cout << std::endl;
+                std::cout << "> Or using 'Make'" << std::endl;
+                std::cout << std::endl;
+                std::cout << "Run make as file=<filename> To pre-process and assemble the file." << std::endl;
+                std::cout << "Run make link file1=<filename1> file2=<filename2> To pre-process, assemble, and link the files." << std::endl;
                 return 0;
             }
             else
             {
-                std::cerr << "Error opening file. See ./montador -help to see available commands." << std::endl;
+                std::cerr << "Error opening file. See ./montador --help to see available commands." << std::endl;
                 return 1;
             }
         }
@@ -40,15 +46,15 @@ int main(int argc, char *argv[])
             std::string filename = argv[2];
             if (flag == "-o")
             {
-                Assembler::Assembler assembler;
+                Assembler assembler;
                 try
                 {
                     assembler.ReadFile(filename);
                 }
                 catch (const std::invalid_argument &e)
                 {
-                    std::cerr << e.what() << '\n';
-                    std::cerr << "At line: " << assembler.line_counter << '\n';
+                    std::cerr << e.what() << std::endl;
+                    std::cerr << "At line: " << assembler.line_counter << std::endl;
                     return 1;
                 }
 
@@ -57,13 +63,13 @@ int main(int argc, char *argv[])
             }
             else if (flag == "-p")
             {
-				PRE_PROCESSING PRE_PROCESSING;
+                PRE_PROCESSING PRE_PROCESSING;
                 PRE_PROCESSING.ReadFile(filename);
                 return 0;
             }
             else
             {
-                std::cerr << "Error opening file. See ./montador -help to see available commands." << std::endl;
+                std::cerr << "Error opening file. See ./montador --help to see available commands." << std::endl;
                 return 1;
             }
         }
@@ -75,24 +81,19 @@ int main(int argc, char *argv[])
             if (flag == "-l")
             {
                 Linker linker;
-                Module modA = linker.readModule(filename1);
-                Module modB = linker.readModule(filename2);
-                std::vector<int> linkedCode = linker.linkModules(modA, modB);
-
-                std::string output_filename = filename1.substr(0, filename1.size() - 2) + "_linked.obj";
-                linker.writeLinkedModule(linkedCode, output_filename);
+                linker.linkFiles(filename1, filename2);
                 return 0;
             }
             else
             {
-                std::cerr << "Error opening file. See ./montador -help to see available commands." << std::endl;
+                std::cerr << "Error opening file. See ./montador --help to see available commands." << std::endl;
                 return 1;
             }
         }
     }
     catch (const std::exception &e)
     {
-        std::cerr << e.what() << '\n';
+        std::cerr << e.what() << std::endl;
     }
 
     return 0;

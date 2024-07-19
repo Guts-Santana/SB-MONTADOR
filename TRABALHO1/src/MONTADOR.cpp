@@ -7,17 +7,17 @@ Assembler::Assembler::Assembler()
 {
 }
 
-void Assembler::Assembler::ReadFile(const std::string &filename)
+void Assembler::ReadFile(const std::string &filename)
 {
     std::string line;
     std::string word;
     std::vector<std::string> parsed_line;
 
-
     std::ifstream file(filename);
     if (!file.is_open())
     {
-        throw std::invalid_argument("PRE file not founded");
+        std::cerr << "PRE file not found" << std::endl;
+        return;
     }
 
     while (getline(file, line))
@@ -30,16 +30,17 @@ void Assembler::Assembler::ReadFile(const std::string &filename)
             parsed_line.push_back(word);
         }
 
-        UpdateUsageTable(parsed_line);
+        ParseDefinitionTable(parsed_line);
 
         parsed_line = FindLabel(parsed_line);
-		if (parsed_line.size() != 0)
-		{
-			FindLabel(parsed_line);
-		}
+        if (parsed_line.size() != 0)
+        {
+            FindLabel(parsed_line);
+        }
+
         if (parsed_line[0] == "BEGIN")
         {
-            definition_table[labels.back()].push_back(0);
+            modname = labels.back();
             should_be_linked = true;
             line_counter++;
             continue;
@@ -61,7 +62,15 @@ void Assembler::Assembler::ReadFile(const std::string &filename)
         if (parsed_line[0] == "PUBLIC")
         {
             line_counter++;
-            definition_table[parsed_line[1]].push_back(-1);
+            public_symbols.push_back(parsed_line[1]);
+            if (parsed_line[1] == modname)
+            {
+                UpdateDefinitionTable(parsed_line[1], 0);
+            }
+            else
+            {
+                UpdateDefinitionTable(parsed_line[1], -1);
+            }
             continue;
         }
 
@@ -78,17 +87,33 @@ void Assembler::Assembler::ReadFile(const std::string &filename)
             {
                 PC += parsed_line.size();
             }
-            else if (parsed_line[0] != "STOP")
-            {
+            else
                 PC++;
-            }
         }
-       line_counter++;
+        line_counter++;
     }
-	ErrorNotDefined();
+    ErrorNotDefined();
 }
 
-void Assembler::Assembler::UpdateUsageTable(const std::vector<std::string> &line)
+void Assembler::UpdateDefinitionTable(std::string label, int value)
+{
+
+    if (definition_table.find(label) != definition_table.end() && definition_table[label] != -1)
+    {
+        if (value != -1)
+        {
+
+            std::cerr << "Key " + label + " already exists in definition table";
+            throw std::invalid_argument("Semantic Error: LABEL REDEFINED");
+        }
+    }
+    else
+    {
+        definition_table[label] = value;
+    }
+}
+
+void Assembler::ParseDefinitionTable(const std::vector<std::string> &line)
 {
     if (line[0].back() == ':')
     {
@@ -104,25 +129,12 @@ void Assembler::Assembler::UpdateUsageTable(const std::vector<std::string> &line
                 temp_line.erase(temp_line.begin());
             }
 
-            if (temp_line[0] == "CONST")
-            {
-                definition_table[temp].clear();
-                definition_table[temp].push_back(std::stoi(temp_line[1]));
-            }
-            else if (temp_line[0] == "SPACE")
-            {
-                definition_table[temp].clear();
-                definition_table[temp].push_back(0);
-            }
-            else
-            {
-                definition_table[temp].push_back(PC);
-            }
+            UpdateDefinitionTable(temp, PC);
         }
     }
 }
 
-void Assembler::Assembler::WriteFile(const std::string &filename)
+void Assembler::WriteFile(const std::string &filename)
 {
     std::string output_filename;
     if (should_be_linked)
@@ -142,29 +154,20 @@ void Assembler::Assembler::WriteFile(const std::string &filename)
         file << "USO\n";
         for (const auto &[key, value] : usage_table)
         {
-            file << key << " ";
             for (int v : value)
             {
                 if (v != -1)
                 {
-                    file << v << " ";
+                    file << key << " " << v << '\n';
                 }
             }
-            file << '\n';
         }
 
         file << "\nDEF\n";
         for (const auto &[key, value] : definition_table)
         {
-            file << key << " ";
-            for (int v : value)
-            {
-                if (v != -1)
-                {
-                    file << v << " ";
-                }
-            }
-            file << '\n';
+
+            file << key << " " << value << '\n';
         }
 
         file << "\nREAL\n";
@@ -179,68 +182,69 @@ void Assembler::Assembler::WriteFile(const std::string &filename)
 
     for (const std::string &i : program)
     {
-        std::cout << i << ' ';
         file << i << ' ';
     }
     file.close();
 }
 
-std::vector<std::string> Assembler::Assembler::FindLabel(std::vector<std::string> line)
+std::vector<std::string> Assembler::FindLabel(std::vector<std::string> line)
 {
     if (line[0].back() == ':')
     {
-		if (second_label)
-		{
-			throw std::invalid_argument("Two labels");
-		}
-		second_label = true;
+        if (second_label)
+        {
+            throw std::invalid_argument("Two labels");
+        }
+        second_label = true;
         std::string label = line[0];
         label.pop_back();
-		LexicERROR(label);
+        LexicERROR(label);
         auto it = std::find(labels.begin(), labels.end(), label);
         if (it != labels.end())
         {
             throw std::invalid_argument("Semantic Error: LABEL REDEFINED");
         }
         else if (line.size() != 1)
-		{
-			if (line[1] == "SPACE" || line[1] == "CONST")
-        	{
-				second_label = false;
-				return line;
-        	}
-			else
-			{
-				labels.push_back(label);
-            	label_addresses.push_back(std::to_string(PC));
-            	line.erase(line.begin());
-			}
-		}
-		else
-		{
-			labels.push_back(label);
+        {
+            if (line[1] == "SPACE" || line[1] == "CONST")
+            {
+                second_label = false;
+                return line;
+            }
+            else
+            {
+                labels.push_back(label);
+                label_addresses.push_back(std::to_string(PC));
+                line.erase(line.begin());
+            }
+        }
+        else
+        {
+            labels.push_back(label);
             label_addresses.push_back(std::to_string(PC));
             line.erase(line.begin());
-		}
+        }
         auto undef_it = std::find(undefined_labels.begin(), undefined_labels.end(), label);
         if (undef_it != undefined_labels.end())
         {
-			int pos;
-			while (undef_it != undefined_labels.end()){				
-            	pos = std::distance(undefined_labels.begin(), undef_it);
-            	program[std::stoi(label_notD[pos])] = std::to_string(PC);
-            	undefined_labels[pos] = "0";
-				undef_it = std::find(undefined_labels.begin(), undefined_labels.end(), label);
-			}
+            int pos;
+            while (undef_it != undefined_labels.end())
+            {
+                pos = std::distance(undefined_labels.begin(), undef_it);
+                program[std::stoi(label_notD[pos])] = std::to_string(PC);
+                undefined_labels[pos] = "0";
+                undef_it = std::find(undefined_labels.begin(), undefined_labels.end(), label);
+            }
         }
     }
-	else{
-		second_label = false;
-	}
+    else
+    {
+        second_label = false;
+    }
     return line;
 }
 
-void Assembler::Assembler::WriteProgram(const std::vector<std::string> &line, bool shouldBeLinked)
+void Assembler::WriteProgram(const std::vector<std::string> &line, bool shouldBeLinked)
 {
     int position;
     for (size_t i = 0; i < line.size(); ++i)
@@ -260,21 +264,21 @@ void Assembler::Assembler::WriteProgram(const std::vector<std::string> &line, bo
         auto opcode_it = std::find(opcodes.begin(), opcodes.end(), line[i]);
         if (opcode_it != opcodes.end())
         {
-			if (i == 0)
-			{
-				InstructionConfig(line);
-            	if (shouldBeLinked)
-            	{
-            	    relocation_table.push_back(0);
-            	}
-            	position = std::distance(opcodes.begin(), opcode_it);
-            	program.push_back(opcode_values[position]);
-            	continue;
-			}
-			else
-			{
-				throw std::invalid_argument("Syntax Error");
-			}
+            if (i == 0)
+            {
+                InstructionConfig(line);
+                if (shouldBeLinked)
+                {
+                    relocation_table.push_back(0);
+                }
+                position = std::distance(opcodes.begin(), opcode_it);
+                program.push_back(opcode_values[position]);
+                continue;
+            }
+            else
+            {
+                throw std::invalid_argument("Syntax Error");
+            }
         }
 
         auto label_it = std::find(labels.begin(), labels.end(), line[i]);
@@ -283,9 +287,8 @@ void Assembler::Assembler::WriteProgram(const std::vector<std::string> &line, bo
             if (shouldBeLinked)
             {
                 relocation_table.push_back(1);
-				
             }
-			LexicERROR(line[i]);
+            LexicERROR(line[i]);
             position = std::distance(labels.begin(), label_it);
             program.push_back(label_addresses[position]);
             continue;
@@ -314,19 +317,19 @@ void Assembler::Assembler::WriteProgram(const std::vector<std::string> &line, bo
         {
             if (line[0] != "JMP" && line[0] != "JMPP" && line[0] != "JMPZ" && line[0] != "JMPN")
             {
-				LexicERROR(line[i]);
+                LexicERROR(line[i]);
                 if (shouldBeLinked)
                 {
                     relocation_table.push_back(1);
                 }
                 symbols.push_back(line[i]);
                 symbol_addresses.push_back(std::to_string(PC + static_cast<int>(i)));
-				symbols_notD.push_back(true);
+                symbols_notD.push_back(true);
                 program.push_back("-1");
             }
             else
             {
-				LexicERROR(line[i]);
+                LexicERROR(line[i]);
                 label_notD.push_back(std::to_string(PC + static_cast<int>(i)));
                 undefined_labels.push_back(line[i]);
                 program.push_back("-1");
@@ -335,49 +338,71 @@ void Assembler::Assembler::WriteProgram(const std::vector<std::string> &line, bo
     }
 }
 
-void Assembler::Assembler::WriteSymbols(const std::vector<std::string> &line)
+void Assembler::WriteSymbols(const std::vector<std::string> &line)
 {
     std::string sym = line[0];
     sym.pop_back();
-	LexicERROR(sym);
+    LexicERROR(sym);
+
     auto symbol_it = std::find(symbols.begin(), symbols.end(), sym);
-    if (symbol_it != symbols.end())
+    auto special_symbol_it = std::find(public_symbols.begin(), public_symbols.end(), sym);
+
+    bool isSymbol = symbol_it != symbols.end();
+    bool is_public = special_symbol_it != public_symbols.end();
+
+    if (isSymbol || is_public)
     {
         int position = std::distance(symbols.begin(), symbol_it);
-		if (!symbols_notD[position])
-		{
-			throw std::invalid_argument("Semantic Error: Symbol redefined");
-		}
-		symbols_notD[position] = false;
+        if (!is_public)
+        {
+
+            if (!symbols_notD[position])
+            {
+                throw std::invalid_argument("Semantic Error: Symbol redefined");
+            }
+            symbols_notD[position] = false;
+        }
         if (line[1] == "CONST")
         {
-			if (line.size() != 3)
-    		{
-        		throw std::invalid_argument("Syntax Error");
-    		}
-            program.push_back(line[2]);
+            if (line.size() != 3)
+            {
+                throw std::invalid_argument("Syntax Error: CONST must have a value");
+            }
+            if (is_hex(line[2]))
+            {
+                program.push_back(parse_hex_to_dec(line[2]));
+            }
+            else
+            {
+
+                program.push_back(line[2]);
+            }
+
+            if (is_public && !isSymbol)
+                return;
         }
         else if (line[1] == "SPACE")
         {
-			if (line.size() != 2)
-   			{
-        		throw std::invalid_argument("Syntax Error");
-    		}
+            if (line.size() != 2)
+            {
+                throw std::invalid_argument("Syntax Error: SPACE must not have a value");
+            }
             program.push_back("0");
+            if (is_public && !isSymbol)
+                return;
         }
         else
         {
             throw std::invalid_argument("Error");
         }
-
         int pos = std::stoi(symbol_addresses[position]);
         while (program[pos] != "-1")
         {
             int temp = std::stoi(program[pos]);
-            program[pos] = std::to_string(PC + 1);
+            program[pos] = std::to_string(PC);
             pos = temp;
         }
-        program[pos] = std::to_string(PC + 1);
+        program[pos] = std::to_string(PC);
     }
 }
 
@@ -388,79 +413,124 @@ std::vector<std::string> Assembler::Assembler::ProcessCopyInstruction(std::vecto
     std::getline(ss, first_symbol, ',');
     std::getline(ss, second_symbol, ',');
     line[1] = first_symbol;
-	LexicERROR(line[1]);
+    LexicERROR(line[1]);
     line.push_back(second_symbol);
-	LexicERROR(line[2]);
+    LexicERROR(line[2]);
     return line;
 }
 
 //----------------------------------ERRORS-----------------------------------//
 
-void Assembler::Assembler::ErrorNotDefined(){
-	int i;
-	std::stringstream ss;
-	for (i = 0; i < undefined_labels.size(); i++)
-	{
-		if (undefined_labels[i] != "0")
-		{
-			ss << "Semantic Error: Label " << undefined_labels[i] << " not Defined";
-			throw std::invalid_argument(ss.str());
-		}
-	}
-	for (i = 0; i < symbols_notD.size(); i++)
-	{
-		if (symbols_notD[i])
-		{
-			ss << "Semantic Error: Symbol " << symbols[i] << " not Defined";
-			throw std::invalid_argument(ss.str());
-		}
-		
-	}
+void Assembler::Assembler::ErrorNotDefined()
+{
+    int i;
+    std::stringstream ss;
+    for (i = 0; i < undefined_labels.size(); i++)
+    {
+        if (undefined_labels[i] != "0")
+        {
+            ss << "Semantic Error: Label " << undefined_labels[i] << " not Defined";
+            throw std::invalid_argument(ss.str());
+        }
+    }
+    for (i = 0; i < symbols_notD.size(); i++)
+    {
+        if (std::find(public_symbols.begin(), public_symbols.end(), symbols[i]) != public_symbols.end())
+            continue;
+
+        if (symbols_notD[i])
+        {
+            ss << "Semantic Error: Symbol " << symbols[i] << " not Defined";
+            throw std::invalid_argument(ss.str());
+        }
+    }
+    for (i = 0; i < public_symbols.size(); i++)
+    {
+        if (definition_table[public_symbols[i]] == -1)
+        {
+            ss << "Semantic Error: Public Symbol " << public_symbols[i] << " not Defined";
+            throw std::invalid_argument(ss.str());
+        }
+    }
 }
 
 void Assembler::Assembler::LexicERROR(std::string word)
 {
-	if (word.size() < 2)
-	{
-		throw std::invalid_argument("Lexic Error");
-	}
-	if (isdigit(word[0]))
-	{
-		throw std::invalid_argument("Lexic Error");
-	}
-	for (int i = 0; i < word.size(); i++)
-	{
-		if(!isalnum(word[i]))
-		{
-			if (word[i] != '_')
-			{
-				throw std::invalid_argument("Lexic Error");
-			}
-		}
-	}	
+    if (isdigit(word[0]))
+    {
+        throw std::invalid_argument("Lexic Error");
+    }
+    for (int i = 0; i < word.size(); i++)
+    {
+        if (!isalnum(word[i]))
+        {
+            if (word[i] != '_')
+            {
+                throw std::invalid_argument("Lexic Error");
+            }
+        }
+    }
 }
 
 void Assembler::Assembler::InstructionConfig(std::vector<std::string> line)
 {
-	if (line[0] != "COPY" && line[0] != "STOP")
-	{
-		if (line.size() != 2)
-		{
-			throw std::invalid_argument("Syntax Error");
-		}
-	}
-	else if (line[0] == "COPY")
-	{
-		if (line.size() != 3)
-		{
-			throw std::invalid_argument("Syntax Error");
-		}
-	}
-	else
-	{
-		if (line.size() != 1)
-		{
-			throw std::invalid_argument("Syntax Error");
-		}
-	}
+    if (line[0] != "COPY" && line[0] != "STOP")
+    {
+        if (line.size() != 2)
+        {
+            throw std::invalid_argument("Syntax Error");
+        }
+    }
+    else if (line[0] == "COPY")
+    {
+        if (line.size() != 3)
+        {
+            throw std::invalid_argument("Syntax Error");
+        }
+    }
+    else
+    {
+        if (line.size() != 1)
+        {
+            throw std::invalid_argument("Syntax Error");
+        }
+    }
+}
+
+// --------------------- AUX FUNCTIONS --------------------- //
+
+bool Assembler::is_hex(std::string num)
+{
+    if (num.substr(0, 2) == "0x" || num.substr(0, 2) == "0X")
+    {
+        for (int i = 2; i < num.size(); i++)
+        {
+            if (!isxdigit(num[i]))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+std::string Assembler::parse_hex_to_dec(std::string num)
+{
+    std::string hex_num = num.substr(2);
+
+    unsigned int decimal_num;
+    std::stringstream ss;
+    ss << std::hex << hex_num;
+    ss >> decimal_num;
+
+    if (ss.fail())
+    {
+        throw std::invalid_argument("Invalid hexadecimal number");
+    }
+
+    std::stringstream result;
+    result << decimal_num;
+
+    return result.str();
 }
