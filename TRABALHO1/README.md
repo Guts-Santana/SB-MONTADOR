@@ -42,13 +42,13 @@ ou
 
 ```
 
-3. Para montar um arquivo `.asm` e gerar um arquivo `.obj` (ou `.e`, no caso de arquivos ligáveis), execute:
+3. Para **apenas** montar um arquivo pré processado `.pre` e gerar um arquivo `.obj` (ou `.e`, no caso de arquivos ligáveis), execute:
 
 ```bash
 ./montador -o <arquivo.asm>
 ```
 
-4. Para ligar dois arquivos `.e` e gerar um arquivo `.obj` resultante, execute:
+4. Para **apenas** ligar dois arquivos `.e` e gerar um arquivo `.obj` resultante, execute:
 
 ```bash
 ./montador -l <arquivo1.e> <arquivo2.e>
