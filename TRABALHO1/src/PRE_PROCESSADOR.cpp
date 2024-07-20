@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:TRABALHO1/src/PRE_PROCESSOR.cpp
-#include "PRE_PROCESSOR.hpp"
-========
 #include "PRE_PROCESSADOR.hpp"
->>>>>>>> origin/merge:TRABALHO1/src/PRE_PROCESSADOR.cpp
 
 /*
 Essa função ocorre a leitura do arquivo assembly e
