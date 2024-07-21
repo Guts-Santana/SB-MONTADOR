@@ -108,7 +108,6 @@ TRABALHO1
 │ │ simulador
 │
 ├── src
-│ │ main.cpp
 │ │ LIGADOR.cpp
 │ │ MONTADOR.cpp
 │ │ PRE_PROCESSADOR.cpp
