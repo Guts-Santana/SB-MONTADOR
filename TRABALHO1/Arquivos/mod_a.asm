@@ -1,6 +1,7 @@
-MOD_A: BEGIN
+mod_a: BEGIN
 Y: EXTERN          ; valor = 10
 MOD_B: EXTERN
+L3: EXTERN
 PUBLIC VAL
 PUBLIC L1
 OUTPUT K           ; = 8
