@@ -1,15 +1,12 @@
 FIB1: BEGIN   
-
 FIB: EXTERN
 ND2: EXTERN
-
 PUBLIC ST 
 PUBLIC ND
 PUBLiC PREV
 PUBLIC CUR
 PUBLIC TEMP
 PUBLIC LIMIT
-
 ST:    INPUT   LIMIT          ; Input the limit for Fibonacci sequence
        LOAD    ZERO           ; Load the initial Fibonacci number (0) to ACC
        STORE   CUR            ; Store 0 in CUR
