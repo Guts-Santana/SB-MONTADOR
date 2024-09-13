@@ -1,12 +1,15 @@
 FIB2: BEGIN
-ST: EXTERN
+
+PUBLIC ND2
 PUBLIC FIB
+
+ST: EXTERN
 LIMIT: EXTERN
 CUR: EXTERN
 ND: EXTERN
-PUBLIC ND2
 PREV: EXTERN
 TEMP: EXTERN
+
 FIB:   LOAD    CUR            ; Load the current Fibonacci number
        ADD     PREV           ; Add the previous Fibonacci number to ACC (calculating next Fibonacci number)
        STORE   TEMP           ; Store the result temporarily
